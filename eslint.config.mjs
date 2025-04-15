@@ -11,6 +11,7 @@ const compat = new FlatCompat({
 
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
+  "plugin:prettier/recommended", // 添加 Prettier 的推荐配置
 ];
 
 export default eslintConfig;
