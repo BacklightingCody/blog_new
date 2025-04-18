@@ -1,26 +1,107 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 基础颜色变量 */
+  --background-color: #ffffff;
+  --text-color: #333333;
+  --primary-color: #3b82f6;
+  
+  /* 优化后的主题色彩变量 - 浅色模式 */
+  --red-color: #ff3d71;
+  --blue-color: #3e63dd;
+  --pink-color: #d6409f;
+  --purple-color: #7c3aed;
+  --cyan-color: #0ca4a5;
+  --orange-color: #ff7849;
+  --yellow-color: #ffb340;
+  
+  /* 相关辅助颜色 */
+  --subtle-bg: #f9fafb;
+  --border-color: #e5e7eb;
+  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+}
+
+.dark-mode {
+  --background-color: #0f172a;
+  --text-color: #e2e8f0;
+  
+  /* 深色模式下的主题色调整 */
+  --red-color: #ff4d7e;
+  --blue-color: #5a7bfc;
+  --pink-color: #e773b9;
+  --purple-color: #9061f9;
+  --cyan-color: #25b0b0;
+  --orange-color: #ff925e;
+  --yellow-color: #ffc857;
+  
+  /* 深色模式辅助颜色 */
+  --subtle-bg: #1e293b;
+  --border-color: #334155;
+  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+}
+
+.eye-protection-mode {
+  --background-color: #f3f9ee;
+  --text-color: #2c3528;
+  --primary-color: #4a9d50;
+  
+  /* 护眼模式辅助颜色 */
+  --subtle-bg: #eef7e8;
+  --border-color: #d5e3d0;
+  --card-shadow: 0 4px 6px -1px rgb(144 185 144 / 0.15);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--background-color);
+  --color-foreground: var(--text-color);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* 系统偏好设置检测 */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not(.light-mode):not(.eye-protection-mode) {
+    --background-color: #0f172a;
+    --text-color: #e2e8f0;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--background-color);
+  color: var(--text-color);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* 应用主题色的常用元素 */
+a, button, .themed-element {
+  color: var(--primary-color);
+  transition: color 0.3s ease;
+}
+
+.themed-bg {
+  background-color: var(--primary-color);
+  transition: background-color 0.3s ease;
+}
+
+/* 卡片和容器样式 */
+.themed-card {
+  background-color: var(--subtle-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--card-shadow);
+  border-radius: 0.5rem;
+}
+
+/* 为链接添加微妙的下划线效果 */
+.themed-link {
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0% 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1px;
+  transition: background-size 0.3s;
+}
+
+.themed-link:hover {
+  background-size: 100% 1px;
 }
