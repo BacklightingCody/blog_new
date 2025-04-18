@@ -10,7 +10,7 @@ interface ThemeControllerProps {
 const themeColors: ThemeColor[] = ['red', 'blue', 'pink', 'purple', 'cyan', 'orange', 'yellow'];
 
 export function ThemeController({ className = '' }: ThemeControllerProps) {
-  const { mode, color, setMode, setColor, toggleDarkMode } = useThemeStore();
+  const { mode, color, setColor, toggleDarkMode, toggleEyeProtection } = useThemeStore();
 
   const colorNames = {
     red: '红色',
@@ -46,7 +46,7 @@ export function ThemeController({ className = '' }: ThemeControllerProps) {
             <span className="text-sm font-medium">护眼模式</span>
             <Switch
               checked={mode === 'eye-protection'}
-              onChange={(checked) => setMode(checked ? 'eye-protection' : 'light')}
+              onChange={toggleEyeProtection}
               activeTrackColor="#4a9d50"
               ariaLabel="切换护眼模式"
             />
