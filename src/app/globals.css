@@ -1,10 +1,18 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
   /* 基础颜色变量 */
   --background-color: #ffffff;
   --text-color: #333333;
   --primary-color: #3b82f6;
+
+  /* 默认主题 - 蓝色 */
+  --theme-primary: #3b82f6;
+  --theme-secondary: #60a5fa;
+  --theme-accent: #93c5fd;
   
   /* 优化后的主题色彩变量 - 浅色模式 */
   --red-color: #ff3d71;
@@ -14,37 +22,206 @@
   --cyan-color: #0ca4a5;
   --orange-color: #ff7849;
   --yellow-color: #ffb340;
-  
+
   /* 相关辅助颜色 */
   --subtle-bg: #f9fafb;
   --border-color: #e5e7eb;
   --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+  --primary: oklch(0.21 0.006 285.885);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.552 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.21 0.006 285.885);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.705 0.015 286.067);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-primary: oklch(0.21 0.006 285.885);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.967 0.001 286.375);
+  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
-.dark-mode {
-  --background-color: #0f172a;
-  --text-color: #e2e8f0;
+/* 7个主题的亮色模式 */
+.theme-blue {
+  --theme-primary: #3b82f6;
+  --theme-secondary: #60a5fa;
+  --theme-accent: #93c5fd;
   
-  /* 深色模式下的主题色调整 */
-  --red-color: #ff4d7e;
-  --blue-color: #5a7bfc;
-  --pink-color: #e773b9;
-  --purple-color: #9061f9;
-  --cyan-color: #25b0b0;
-  --orange-color: #ff925e;
-  --yellow-color: #ffc857;
+  --primary-color: var(--theme-primary);
+  --border-color: #dbeafe;
+  --subtle-bg: #f0f7ff;
+  --card-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
+}
+
+.theme-red {
+  --theme-primary: #ef4444;
+  --theme-secondary: #f87171;
+  --theme-accent: #fca5a5;
   
-  /* 深色模式辅助颜色 */
-  --subtle-bg: #1e293b;
-  --border-color: #334155;
-  --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+  --primary-color: var(--theme-primary);
+  --border-color: #fee2e2;
+  --subtle-bg: #fff5f5;
+  --card-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.1);
+}
+
+.theme-green {
+  --theme-primary: #10b981;
+  --theme-secondary: #34d399;
+  --theme-accent: #6ee7b7;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #d1fae5;
+  --subtle-bg: #ecfdf5;
+  --card-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);
+}
+
+.theme-purple {
+  --theme-primary: #8b5cf6;
+  --theme-secondary: #a78bfa;
+  --theme-accent: #c4b5fd;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #ede9fe;
+  --subtle-bg: #f5f3ff;
+  --card-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.1);
+}
+
+.theme-orange {
+  --theme-primary: #f97316;
+  --theme-secondary: #fb923c;
+  --theme-accent: #fdba74;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #ffedd5;
+  --subtle-bg: #fff7ed;
+  --card-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.1);
+}
+
+.theme-pink {
+  --theme-primary: #ec4899;
+  --theme-secondary: #f472b6;
+  --theme-accent: #f9a8d4;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #fce7f3;
+  --subtle-bg: #fdf2f8;
+  --card-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.1);
+}
+
+.theme-teal {
+  --theme-primary: #14b8a6;
+  --theme-secondary: #2dd4bf;
+  --theme-accent: #5eead4;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #ccfbf1;
+  --subtle-bg: #f0fdfa;
+  --card-shadow: 0 4px 6px -1px rgba(20, 184, 166, 0.1);
+}
+
+/* 7个主题的暗色模式 */
+.dark .theme-blue {
+  --theme-primary: #60a5fa;
+  --theme-secondary: #3b82f6;
+  --theme-accent: #2563eb;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #1e40af;
+  --subtle-bg: #172554;
+  --card-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25);
+}
+
+.dark .theme-red {
+  --theme-primary: #f87171;
+  --theme-secondary: #ef4444;
+  --theme-accent: #dc2626;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #991b1b;
+  --subtle-bg: #450a0a;
+  --card-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.25);
+}
+
+.dark .theme-green {
+  --theme-primary: #34d399;
+  --theme-secondary: #10b981;
+  --theme-accent: #059669;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #065f46;
+  --subtle-bg: #022c22;
+  --card-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.25);
+}
+
+.dark .theme-purple {
+  --theme-primary: #a78bfa;
+  --theme-secondary: #8b5cf6;
+  --theme-accent: #7c3aed;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #5b21b6;
+  --subtle-bg: #2e1065;
+  --card-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.25);
+}
+
+.dark .theme-orange {
+  --theme-primary: #fb923c;
+  --theme-secondary: #f97316;
+  --theme-accent: #ea580c;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #9a3412;
+  --subtle-bg: #431407;
+  --card-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.25);
+}
+
+.dark .theme-pink {
+  --theme-primary: #f472b6;
+  --theme-secondary: #ec4899;
+  --theme-accent: #db2777;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #831843;
+  --subtle-bg: #500724;
+  --card-shadow: 0 4px 6px -1px rgba(219, 39, 119, 0.25);
+}
+
+.dark .theme-teal {
+  --theme-primary: #2dd4bf;
+  --theme-secondary: #14b8a6;
+  --theme-accent: #0d9488;
+  
+  --primary-color: var(--theme-primary);
+  --border-color: #115e59;
+  --subtle-bg: #042f2e;
+  --card-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.25);
 }
 
 .eye-protection-mode {
   --background-color: #f3f9ee;
   --text-color: #2c3528;
   --primary-color: #4a9d50;
-  
+
   /* 护眼模式辅助颜色 */
   --subtle-bg: #eef7e8;
   --border-color: #d5e3d0;
@@ -56,6 +233,44 @@
   --color-foreground: var(--text-color);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  
+  /* 主题色彩映射 */
+  --color-theme-primary: var(--theme-primary);
+  --color-theme-secondary: var(--theme-secondary);
+  --color-theme-accent: var(--theme-accent);
 }
 
 /* 系统偏好设置检测 */
@@ -66,42 +281,45 @@
   }
 }
 
-body {
-  background: var(--background-color);
-  color: var(--text-color);
-  font-family: Arial, Helvetica, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+.dark {
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.21 0.006 285.885);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.21 0.006 285.885);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.92 0.004 286.32);
+  --primary-foreground: oklch(0.21 0.006 285.885);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.552 0.016 285.938);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
-/* 应用主题色的常用元素 */
-a, button, .themed-element {
-  color: var(--primary-color);
-  transition: color 0.3s ease;
-}
-
-.themed-bg {
-  background-color: var(--primary-color);
-  transition: background-color 0.3s ease;
-}
-
-/* 卡片和容器样式 */
-.themed-card {
-  background-color: var(--subtle-bg);
-  border: 1px solid var(--border-color);
-  box-shadow: var(--card-shadow);
-  border-radius: 0.5rem;
-}
-
-/* 为链接添加微妙的下划线效果 */
-.themed-link {
-  text-decoration: none;
-  background-image: linear-gradient(currentColor, currentColor);
-  background-position: 0% 100%;
-  background-repeat: no-repeat;
-  background-size: 0% 1px;
-  transition: background-size 0.3s;
-}
-
-.themed-link:hover {
-  background-size: 100% 1px;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

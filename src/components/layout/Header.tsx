@@ -1,70 +1,69 @@
 'use client'
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Nav from './Nav';
-import ThemeController from '../ui/ThemeController';
-import { useThemeStore } from '@/zustand/themeStore';
+import clsx from 'clsx';
+import { useScrollPosition, useMousePosition } from '@/hooks';
+import { ModeToggle } from '@/components/theme/ModeToggle'
+import { ThemeSelector } from '../theme/ThemeSelector';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import styles from './css/Layout.module.css'
+import svg from '/Backlighting.svg'
+import Signature from '@/components/common/signature'
+// import ThemeController from '../theme/ThemeController';
+
 
 const Header = () => {
-  const [showThemeController, setShowThemeController] = useState(false);
-  const { mode } = useThemeStore();
+  const { y } = useScrollPosition(); // 获取滚动位置的 y 值
+  const threshold = 64; // 你希望的阈值，header 的高度
 
-  // 根据当前模式渲染不同的图标
-  const renderThemeIcon = () => {
-    if (mode === 'dark') {
-      // 深色模式图标 - 月亮
-      return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-        </svg>
-      );
-    } else if (mode === 'eye-protection') {
-      // 护眼模式图标 - 眼睛
-      return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-          <circle cx="12" cy="12" r="3"></circle>
-        </svg>
-      );
-    } else {
-      // 浅色模式图标 - 太阳
-      return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-          <line x1="1" y1="12" x2="3" y2="12"></line>
-          <line x1="21" y1="12" x2="23" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-        </svg>
-      );
-    }
-  };
-
+  const [ref, mousePos] = useMousePosition();
   return (
-    <header className="relative py-4 border-b border-border-color">
+    <header className={clsx('sticky top-0 py-4 flex justify-around items-center w-full z-10 pl-[18%] pr-[15%]  h-16  transform translate-z-0 backdrop-saturate-180 backdrop-blur', y > threshold && styles.shadow)}>
+      <div className={clsx('fixed left-0 ')}>
+        <Signature width={180} className=''></Signature>
+      </div>
       <div className="container mx-auto px-4 flex justify-between items-center">
-        <Nav />
-        <div className="relative">
-          <button
-            className="p-2 rounded-full themed-bg text-white flex items-center justify-center hover:opacity-90 transition-opacity"
-            onClick={() => setShowThemeController(!showThemeController)}
-            aria-label="切换主题设置"
-          >
-            {renderThemeIcon()}
-          </button>
-          
-          {showThemeController && (
-            <div className="absolute right-0 mt-2 p-5 themed-card shadow-theme-card rounded-lg z-10 w-64">
-              <ThemeController />
-            </div>
+        <div className='w-[100px] h-full bg-theme-primary'>
+          <Avatar className='size-12'>
+            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+        </div>
+        <div
+          ref={ref}
+          className={clsx(
+            "relative overflow-hidden rounded-full px-3",
+            {
+              "border-b inset-shadow-sm inset-shadow-theme-primary/10": y < threshold,
+            }
           )}
+        >
+          {mousePos.x !== null && mousePos.y !== null && (
+            <span
+              className="absolute rounded-md bg-theme-primary opacity-10 blur-sm"
+              style={{
+                left: mousePos.x - 75,
+                top: mousePos.y - 50,
+                width: "150px",
+                height: "100px",
+                background: "radial-gradient(circle, var(--theme-primary) 0%, transparent 100%)",
+                opacity: 0.15,
+              }}
+            />
+          )}
+          <Nav />
+        </div>
+        <div className='flex items-center space-x-4'>
+          <Avatar className='size-10'>
+            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+            <AvatarFallback>CN</AvatarFallback>
+          </Avatar>
+          <ModeToggle />
+          <ThemeSelector />
         </div>
       </div>
-    </header>
+    </header >
   );
 };
 

@@ -9,7 +9,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col h-[2000px]">
       <Header />
       <div className="flex flex-1">
         {/* <Sidebar /> */}
