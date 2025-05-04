@@ -16,11 +16,35 @@ export function ModeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
 
+  // 确保护眼模式和主题正确应用
+  React.useEffect(() => {
+    if (!mounted) return;
+    
+    const html = document.documentElement;
+    
+    // 清除所有模式类
+    html.classList.remove('dark', 'light', 'eye-protection-mode');
+    
+    // 根据主题设置添加合适的类
+    if (theme === 'dark' || (theme === 'system' && resolvedTheme === 'dark')) {
+      html.classList.add('dark');
+    } else if (theme === 'eye-protection') {
+      html.classList.add('eye-protection-mode');
+    } else {
+      html.classList.add('light');
+    }
+  }, [theme, resolvedTheme, mounted]);
+
   React.useEffect(() => {
     setMounted(true)
   }, [])
 
   const current = theme === "system" ? resolvedTheme : theme
+
+  // 处理主题切换的函数
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+  };
 
   return (
     <DropdownMenu>
@@ -56,16 +80,16 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("light")}>
           Light
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
           Dark
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("eye-protection")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("eye-protection")}>
           Eye-Protection
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem onClick={() => handleThemeChange("system")}>
           System
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -1,8 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
+/* 确保暗色模式选择器能正确工作 */
+@custom-variant dark (&:is(.dark *), &:is(html.dark *), &:is(body.dark *));
 
+/* 基础设置，定义变量 */
 :root {
   /* 基础颜色变量 */
   --background-color: #ffffff;
@@ -61,8 +63,11 @@
   --sidebar-ring: oklch(0.705 0.015 286.067);
 }
 
-/* 7个主题的亮色模式 */
-.theme-blue {
+/* ===== 明亮模式主题配色 ===== */
+
+/* 蓝色主题 - 明亮模式 */
+:root.theme-blue,
+html.theme-blue:not(.dark):not([data-theme="dark"]):not(.eye-protection-mode) {
   --theme-primary: #3b82f6;
   --theme-secondary: #60a5fa;
   --theme-accent: #93c5fd;
@@ -73,7 +78,9 @@
   --card-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1);
 }
 
-.theme-red {
+/* 红色主题 - 明亮模式 */
+:root.theme-red,
+html.theme-red:not(.dark):not([data-theme="dark"]):not(.eye-protection-mode) {
   --theme-primary: #ef4444;
   --theme-secondary: #f87171;
   --theme-accent: #fca5a5;
@@ -84,7 +91,9 @@
   --card-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.1);
 }
 
-.theme-green {
+/* 绿色主题 - 明亮模式 */
+:root.theme-green,
+html.theme-green:not(.dark):not([data-theme="dark"]):not(.eye-protection-mode) {
   --theme-primary: #10b981;
   --theme-secondary: #34d399;
   --theme-accent: #6ee7b7;
@@ -95,7 +104,9 @@
   --card-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1);
 }
 
-.theme-purple {
+/* 紫色主题 - 明亮模式 */
+:root.theme-purple,
+html.theme-purple:not(.dark):not([data-theme="dark"]):not(.eye-protection-mode) {
   --theme-primary: #8b5cf6;
   --theme-secondary: #a78bfa;
   --theme-accent: #c4b5fd;
@@ -106,7 +117,9 @@
   --card-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.1);
 }
 
-.theme-orange {
+/* 橙色主题 - 明亮模式 */
+:root.theme-orange,
+html.theme-orange:not(.dark):not([data-theme="dark"]):not(.eye-protection-mode) {
   --theme-primary: #f97316;
   --theme-secondary: #fb923c;
   --theme-accent: #fdba74;
@@ -117,7 +130,9 @@
   --card-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.1);
 }
 
-.theme-pink {
+/* 粉色主题 - 明亮模式 */
+:root.theme-pink,
+html.theme-pink:not(.dark):not([data-theme="dark"]):not(.eye-protection-mode) {
   --theme-primary: #ec4899;
   --theme-secondary: #f472b6;
   --theme-accent: #f9a8d4;
@@ -128,7 +143,9 @@
   --card-shadow: 0 4px 6px -1px rgba(236, 72, 153, 0.1);
 }
 
-.theme-teal {
+/* 青色主题 - 明亮模式 */
+:root.theme-teal,
+html.theme-teal:not(.dark):not([data-theme="dark"]):not(.eye-protection-mode) {
   --theme-primary: #14b8a6;
   --theme-secondary: #2dd4bf;
   --theme-accent: #5eead4;
@@ -139,8 +156,52 @@
   --card-shadow: 0 4px 6px -1px rgba(20, 184, 166, 0.1);
 }
 
-/* 7个主题的暗色模式 */
-.dark .theme-blue {
+/* ===== 暗黑模式基础设置 ===== */
+:root.dark,
+html.dark,
+[data-theme="dark"] {
+  --background-color: #0f172a;
+  --text-color: #e2e8f0;
+
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.21 0.006 285.885);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.21 0.006 285.885);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.92 0.004 286.32);
+  --primary-foreground: oklch(0.21 0.006 285.885);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.552 0.016 285.938);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.21 0.006 285.885);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.552 0.016 285.938);
+}
+
+/* ===== 暗黑模式主题配色 ===== */
+
+/* 蓝色主题 - 暗黑模式 */
+:root.dark.theme-blue,
+html.dark.theme-blue,
+[data-theme="dark"].theme-blue {
   --theme-primary: #60a5fa;
   --theme-secondary: #3b82f6;
   --theme-accent: #2563eb;
@@ -151,7 +212,10 @@
   --card-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25);
 }
 
-.dark .theme-red {
+/* 红色主题 - 暗黑模式 */
+:root.dark.theme-red,
+html.dark.theme-red,
+[data-theme="dark"].theme-red {
   --theme-primary: #f87171;
   --theme-secondary: #ef4444;
   --theme-accent: #dc2626;
@@ -162,7 +226,10 @@
   --card-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.25);
 }
 
-.dark .theme-green {
+/* 绿色主题 - 暗黑模式 */
+:root.dark.theme-green,
+html.dark.theme-green,
+[data-theme="dark"].theme-green {
   --theme-primary: #34d399;
   --theme-secondary: #10b981;
   --theme-accent: #059669;
@@ -173,7 +240,10 @@
   --card-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.25);
 }
 
-.dark .theme-purple {
+/* 紫色主题 - 暗黑模式 */
+:root.dark.theme-purple,
+html.dark.theme-purple,
+[data-theme="dark"].theme-purple {
   --theme-primary: #a78bfa;
   --theme-secondary: #8b5cf6;
   --theme-accent: #7c3aed;
@@ -184,7 +254,10 @@
   --card-shadow: 0 4px 6px -1px rgba(124, 58, 237, 0.25);
 }
 
-.dark .theme-orange {
+/* 橙色主题 - 暗黑模式 */
+:root.dark.theme-orange,
+html.dark.theme-orange,
+[data-theme="dark"].theme-orange {
   --theme-primary: #fb923c;
   --theme-secondary: #f97316;
   --theme-accent: #ea580c;
@@ -195,7 +268,10 @@
   --card-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.25);
 }
 
-.dark .theme-pink {
+/* 粉色主题 - 暗黑模式 */
+:root.dark.theme-pink,
+html.dark.theme-pink,
+[data-theme="dark"].theme-pink {
   --theme-primary: #f472b6;
   --theme-secondary: #ec4899;
   --theme-accent: #db2777;
@@ -206,7 +282,10 @@
   --card-shadow: 0 4px 6px -1px rgba(219, 39, 119, 0.25);
 }
 
-.dark .theme-teal {
+/* 青色主题 - 暗黑模式 */
+:root.dark.theme-teal,
+html.dark.theme-teal,
+[data-theme="dark"].theme-teal {
   --theme-primary: #2dd4bf;
   --theme-secondary: #14b8a6;
   --theme-accent: #0d9488;
@@ -217,7 +296,14 @@
   --card-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.25);
 }
 
-.eye-protection-mode {
+/* ===== 护眼模式设置 ===== */
+:root.eye-protection-mode,
+html.eye-protection-mode,
+[data-theme="eye-protection"],
+html[data-theme="eye-protection"],
+.eye-protection-mode,
+.eye-protection {
+  /* 护眼模式基本设置 */
   --background-color: #f3f9ee;
   --text-color: #2c3528;
   --primary-color: #4a9d50;
@@ -226,6 +312,143 @@
   --subtle-bg: #eef7e8;
   --border-color: #d5e3d0;
   --card-shadow: 0 4px 6px -1px rgb(144 185 144 / 0.15);
+  
+  /* 护眼模式下同样应用主题颜色变化 */
+  --theme-primary: #4a9d50;
+  --theme-secondary: #68b06e;
+  --theme-accent: #8cc790;
+
+  /* 覆盖任何可能从dark模式继承的样式 */
+  --background: oklch(0.98 0.02 135);
+  --foreground: oklch(0.2 0.02 135);
+  --card: oklch(0.96 0.02 135);
+  --card-foreground: oklch(0.2 0.02 135);
+  --popover: oklch(0.96 0.02 135);
+  --popover-foreground: oklch(0.2 0.02 135);
+  --primary: oklch(0.6 0.13 140);
+  --primary-foreground: oklch(0.98 0.02 135);
+  --secondary: oklch(0.9 0.05 135);
+  --secondary-foreground: oklch(0.4 0.08 140);
+  --muted: oklch(0.9 0.05 135);
+  --muted-foreground: oklch(0.4 0.08 140);
+  --accent: oklch(0.9 0.05 135);
+  --accent-foreground: oklch(0.4 0.08 140);
+  --destructive: oklch(0.7 0.18 30);
+  --border: oklch(0.7 0.08 140 / 20%);
+  --input: oklch(0.7 0.08 140 / 20%);
+  --ring: oklch(0.6 0.13 140 / 50%);
+  --sidebar: oklch(0.96 0.02 135);
+  --sidebar-foreground: oklch(0.2 0.02 135);
+  --sidebar-primary: oklch(0.6 0.13 140);
+  --sidebar-primary-foreground: oklch(0.98 0.02 135);
+  --sidebar-accent: oklch(0.9 0.05 135);
+  --sidebar-accent-foreground: oklch(0.4 0.08 140);
+  --sidebar-border: oklch(0.7 0.08 140 / 20%);
+  --sidebar-ring: oklch(0.6 0.13 140 / 50%);
+}
+
+/* 强制护眼模式覆盖暗色模式 */
+.dark.eye-protection-mode,
+.dark[data-theme="eye-protection"],
+[data-theme="dark"][data-theme="eye-protection"],
+html.dark.eye-protection-mode,
+html.dark[data-theme="eye-protection"] {
+  --background-color: #f3f9ee !important;
+  --text-color: #2c3528 !important;
+  --subtle-bg: #eef7e8 !important;
+  --background: oklch(0.98 0.02 135) !important;
+  --foreground: oklch(0.2 0.02 135) !important;
+}
+
+/* 蓝色主题 - 护眼模式 */
+:root.eye-protection-mode.theme-blue,
+html.eye-protection-mode.theme-blue,
+[data-theme="eye-protection"].theme-blue,
+html[data-theme="eye-protection"].theme-blue,
+.eye-protection-mode.theme-blue,
+.eye-protection.theme-blue {
+  --theme-primary: #5096a5;
+  --theme-secondary: #6baebb;
+  --theme-accent: #90c5ce;
+  --primary-color: var(--theme-primary);
+}
+
+/* 红色主题 - 护眼模式 */
+:root.eye-protection-mode.theme-red,
+html.eye-protection-mode.theme-red,
+[data-theme="eye-protection"].theme-red,
+html[data-theme="eye-protection"].theme-red,
+.eye-protection-mode.theme-red,
+.eye-protection.theme-red {
+  --theme-primary: #a55050;
+  --theme-secondary: #bb6b6b;
+  --theme-accent: #ce9090;
+  --primary-color: var(--theme-primary);
+}
+
+/* 绿色主题 - 护眼模式 */
+:root.eye-protection-mode.theme-green,
+html.eye-protection-mode.theme-green,
+[data-theme="eye-protection"].theme-green,
+html[data-theme="eye-protection"].theme-green,
+.eye-protection-mode.theme-green,
+.eye-protection.theme-green {
+  --theme-primary: #4a9d50;
+  --theme-secondary: #68b06e;
+  --theme-accent: #8cc790;
+  --primary-color: var(--theme-primary);
+}
+
+/* 紫色主题 - 护眼模式 */
+:root.eye-protection-mode.theme-purple,
+html.eye-protection-mode.theme-purple,
+[data-theme="eye-protection"].theme-purple,
+html[data-theme="eye-protection"].theme-purple,
+.eye-protection-mode.theme-purple,
+.eye-protection.theme-purple {
+  --theme-primary: #7a6b9d;
+  --theme-secondary: #9385b3;
+  --theme-accent: #b2a7c9;
+  --primary-color: var(--theme-primary);
+}
+
+/* 橙色主题 - 护眼模式 */
+:root.eye-protection-mode.theme-orange,
+html.eye-protection-mode.theme-orange,
+[data-theme="eye-protection"].theme-orange,
+html[data-theme="eye-protection"].theme-orange,
+.eye-protection-mode.theme-orange,
+.eye-protection.theme-orange {
+  --theme-primary: #b17d45;
+  --theme-secondary: #c6996a;
+  --theme-accent: #d8b592;
+  --primary-color: var(--theme-primary);
+}
+
+/* 粉色主题 - 护眼模式 */
+:root.eye-protection-mode.theme-pink,
+html.eye-protection-mode.theme-pink,
+[data-theme="eye-protection"].theme-pink,
+html[data-theme="eye-protection"].theme-pink,
+.eye-protection-mode.theme-pink,
+.eye-protection.theme-pink {
+  --theme-primary: #a56b89;
+  --theme-secondary: #bb879f;
+  --theme-accent: #ceaab7;
+  --primary-color: var(--theme-primary);
+}
+
+/* 青色主题 - 护眼模式 */
+:root.eye-protection-mode.theme-teal,
+html.eye-protection-mode.theme-teal,
+[data-theme="eye-protection"].theme-teal,
+html[data-theme="eye-protection"].theme-teal,
+.eye-protection-mode.theme-teal,
+.eye-protection.theme-teal {
+  --theme-primary: #4a9d99;
+  --theme-secondary: #68b0ad;
+  --theme-accent: #8cc7c4;
+  --primary-color: var(--theme-primary);
 }
 
 @theme inline {
@@ -279,40 +502,6 @@
     --background-color: #0f172a;
     --text-color: #e2e8f0;
   }
-}
-
-.dark {
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.92 0.004 286.32);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.552 0.016 285.938);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.552 0.016 285.938);
 }
 
 @layer base {

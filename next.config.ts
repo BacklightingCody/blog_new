@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
     });
     return config;
   },
+  images: {
+    domains: ['ghchart.rshah.org'],
+  },
 };
 
 export default nextConfig;
