@@ -26,7 +26,7 @@ const Header = () => {
       <div className="container mx-auto flex justify-between items-center">
         <div className='w-[100px] h-full bg-theme-primary'>
           <Avatar className='size-12'>
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+            <AvatarImage src="/avatar.jpg" alt="backlighting's photo" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </div>
