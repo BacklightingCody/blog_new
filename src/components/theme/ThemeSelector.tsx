@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -8,39 +8,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const themes = [
-  { id: 'blue', name: '蓝色', color: '#3b82f6' },
-  { id: 'red', name: '红色', color: '#ef4444' },
-  { id: 'green', name: '绿色', color: '#10b981' },
-  { id: 'purple', name: '紫色', color: '#8b5cf6' },
-  { id: 'orange', name: '橙色', color: '#f97316' },
-  { id: 'pink', name: '粉色', color: '#ec4899' },
-  { id: 'teal', name: '青色', color: '#14b8a6' },
-];
+import { useThemeStore, themes } from '@/zustand/themeStore';
 
 export function ThemeSelector() {
-  const [colorTheme, setColorTheme] = useState('blue');
-  const [mounted, setMounted] = useState(false);
+  const { colorTheme, setColorTheme } = useThemeStore();
 
   useEffect(() => {
-    const saved = localStorage.getItem('color-theme') || 'blue';
-    setColorTheme(saved);
-    setMounted(true);
-  }, []);
-
-  useLayoutEffect(() => {
-    if (!mounted) return;
     document.documentElement.classList.remove(...themes.map(t => `theme-${t.id}`));
     document.documentElement.classList.add(`theme-${colorTheme}`);
-    localStorage.setItem('color-theme', colorTheme);
-  }, [colorTheme, mounted]);
-
-  const handleColorThemeChange = (theme: string) => {
-    setColorTheme(theme);
-  };
-
-  if (!mounted) return null;
+  }, [colorTheme]);
 
   const currentTheme = themes.find(t => t.id === colorTheme);
 
@@ -58,7 +34,7 @@ export function ThemeSelector() {
         {themes.map((theme) => (
           <DropdownMenuItem
             key={theme.id}
-            onClick={() => handleColorThemeChange(theme.id)}
+            onClick={() => setColorTheme(theme.id)}
             className="p-0 m-0"
           >
             <button
