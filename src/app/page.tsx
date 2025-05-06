@@ -1,7 +1,15 @@
 'use client'
 import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar'
 import Image from 'next/image'
+import { LineMdTwitter, LineMdTiktok, LineMdGithub, Icon } from '@/components/features/icon'
+import { useMemo } from 'react'
+
 export default function Home() {
+  const iconMap = {
+    'github': LineMdGithub,
+    'twitter': LineMdTwitter,
+    'tiktok': LineMdTiktok,
+  }
 
 
   return (
@@ -14,6 +22,14 @@ export default function Home() {
         <h1 className='text-4xl py-5'>
           &nbsp;&nbsp;&nbsp;&nbsp;A Front-end &lt;developer / &gt;。
         </h1>
+        <div className='flex gap-4'>
+          {Object.entries(iconMap).map(([key, IconComponent]) => (
+            <span key={key}>
+              <Icon icon={IconComponent} size={50} />
+            </span>
+          ))}
+
+        </div>
       </div>
       <div className="col-span-5 p-4 flex flex-col align-center justify-center">
         <Avatar className='flex justify-center'>
