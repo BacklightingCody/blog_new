@@ -11,17 +11,13 @@ const themes = [
 ];
 
 type ThemeStore = {
-  colorTheme: string;
+  colorTheme: string | null;
   setColorTheme: (themeId: string) => void;
 };
 
-export const useThemeStore = create<ThemeStore>((set) => {
-  // 每次刷新初始化为随机主题
-  const randomTheme = themes[Math.floor(Math.random() * themes.length)].id;
-  return {
-    colorTheme: randomTheme,
-    setColorTheme: (themeId) => set({ colorTheme: themeId }),
-  };
-});
+export const useThemeStore = create<ThemeStore>((set) => ({
+  colorTheme: null,
+  setColorTheme: (themeId) => set({ colorTheme: themeId }),
+}));
 
 export { themes };

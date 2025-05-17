@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect,useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -12,6 +12,15 @@ import { useThemeStore, themes } from '@/zustand/themeStore';
 
 export function ThemeSelector() {
   const { colorTheme, setColorTheme } = useThemeStore();
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (!initialized.current && !colorTheme) {
+      const randomTheme = themes[Math.floor(Math.random() * themes.length)].id;
+      setColorTheme(randomTheme);
+      initialized.current = true;
+    }
+  }, [colorTheme, setColorTheme]);
 
   useEffect(() => {
     document.documentElement.classList.remove(...themes.map(t => `theme-${t.id}`));
@@ -19,7 +28,7 @@ export function ThemeSelector() {
   }, [colorTheme]);
 
   const currentTheme = themes.find(t => t.id === colorTheme);
-
+  console.log('currentTheme', currentTheme);
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

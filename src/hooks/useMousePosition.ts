@@ -1,43 +1,33 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useThrottle } from "@/hooks";
+import { useRef, useEffect } from 'react';
 
-export function useMousePosition() {
-  const [mousePos, setMousePos] = useState<{ x: number | null; y: number | null }>({
-    x: null,
-    y: null,
-  });
-  const ref = useRef<HTMLDivElement>(null);
-
-  // Define handleMouseMove at top level
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    const element = ref.current;
-    if (!element) return;
-
-    const rect = element.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setMousePos({ x, y });
-  }, []);
-
-  // Apply throttle at top level
-  // const handleMouseMove = useThrottle(handleMouseMoveRaw, 16); // 约 60fps
+export function useMouseGlow() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
+    const container = containerRef.current;
+    const glow = glowRef.current;
+    if (!container || !glow) return;
 
-    const handleMouseLeave = () => {
-      setMousePos({ x: null, y: null });
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = container.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      glow.style.left = `${x - 75}px`;
+      glow.style.top = `${y - 50}px`;
     };
 
-    element.addEventListener("mousemove", handleMouseMove);
-    element.addEventListener("mouseleave", handleMouseLeave);
+    container.addEventListener('mousemove', handleMouseMove);
+    container.addEventListener('mouseleave', () => {
+      glow.style.left = `-9999px`;
+      glow.style.top = `-9999px`;
+    });
 
     return () => {
-      element.removeEventListener("mousemove", handleMouseMove);
-      element.removeEventListener("mouseleave", handleMouseLeave);
+      container.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [handleMouseMove]); // Add handleMouseMove as dependency
+  }, []);
 
-  return [ref, mousePos] as const;
+  return { containerRef, glowRef };
 }

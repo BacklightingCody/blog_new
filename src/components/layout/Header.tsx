@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Nav from './Nav';
 import clsx from 'clsx';
-import { useScrollPosition, useMousePosition } from '@/hooks';
+import { useScrollPosition, useMouseGlow } from '@/hooks';
 import { ModeToggle } from '@/components/theme/ModeToggle'
 import { ThemeSelector } from '../theme/ThemeSelector';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -17,7 +17,7 @@ const Header = () => {
   const { y } = useScrollPosition(); // 获取滚动位置的 y 值
   const threshold = 64; // 你希望的阈值，header 的高度
 
-  const [ref, mousePos] = useMousePosition();
+  const { containerRef, glowRef } = useMouseGlow();
   return (
     <header className={clsx('sticky top-0 py-4 flex justify-around items-center w-full z-10 p-[16%]  h-16  transform translate-z-0 backdrop-saturate-180 backdrop-blur', y > threshold && styles.shadow)}>
       <div className={clsx('fixed left-0 ')}>
@@ -31,7 +31,7 @@ const Header = () => {
           </Avatar>
         </div>
         <div
-          ref={ref}
+          ref={containerRef}
           className={clsx(
             "relative overflow-hidden rounded-full px-3",
             {
@@ -39,19 +39,16 @@ const Header = () => {
             }
           )}
         >
-          {mousePos.x !== null && mousePos.y !== null && (
-            <span
-              className="absolute rounded-md bg-theme-primary opacity-10 blur-sm"
-              style={{
-                left: mousePos.x - 75,
-                top: mousePos.y - 50,
-                width: "150px",
-                height: "100px",
-                background: "radial-gradient(circle, var(--theme-primary) 0%, transparent 100%)",
-                opacity: 0.15,
-              }}
-            />
-          )}
+          <span
+            ref={glowRef}
+            className="absolute pointer-events-none w-[150px] h-[100px] rounded-md blur-sm opacity-10"
+            style={{
+              background: "radial-gradient(circle, var(--theme-primary) 0%, transparent 100%)",
+              left: "-9999px",
+              top: "-9999px",
+            }}
+          />
+
           <Nav />
         </div>
         <div className='flex items-center space-x-4'>
