@@ -1,22 +1,40 @@
-export default function Docs() {
+import { Suspense } from "react"
+import BlogList from "@/components/features/blog-list"
+import TimeStats from "@/components/features/time-stats"
+import { Skeleton } from "@/components/ui/skeleton"
+
+export default function BlogPage() {
   return (
-    <main className="py-20 w-full h-full grid grid-cols-12 gap-4 justify-center items-center">
-      <div className="col-span-7  flex flex-col align-center justify-center">
-        <h1 className='text-4xl'>
-          Hi, I'm <b>backlighting</b>👋。
-        </h1>
-        <h1 className='text-4xl py-5'>
-          &nbsp;&nbsp;&nbsp;&nbsp;A Front-end &lt;developer / &gt;。
-        </h1>
+    <div className="mx-auto px-4 py-8">
+      <TimeStats />
+      <div className="mt-8">
+        <Suspense fallback={<BlogListSkeleton />}>
+          <BlogList />
+        </Suspense>
       </div>
-      <div className="col-span-5 p-4 flex flex-col align-center justify-center">
-        <img src="/avatar.jpg" className='rounded-full w-[80%]' />
-        <h1
-          className="text-3xl py-5 text-center font-bold text-theme-primary"
-        >
-          愿你我都能做生活的高手!
-        </h1>
-      </div>
-    </main>
+    </div>
+  )
+}
+
+function BlogListSkeleton() {
+  return (
+    <div className="space-y-4">
+      {Array(5)
+        .fill(0)
+        .map((_, i) => (
+          <div key={i} className="p-6 rounded-lg">
+            <Skeleton className="h-8 w-3/4 mb-4" />
+            <div className="flex gap-2 mb-2">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          </div>
+        ))}
+    </div>
   )
 }

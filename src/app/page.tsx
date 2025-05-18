@@ -13,7 +13,6 @@ export default function Home() {
 
 
   return (
-
     <main className="py-20 w-full h-full grid grid-cols-12 gap-4 justify-center items-center">
       <div className="col-span-7  flex flex-col align-center justify-center">
         <h1 className='text-4xl'>

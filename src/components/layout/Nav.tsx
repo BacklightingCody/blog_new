@@ -91,7 +91,7 @@ const Nav = () => {
                     key={child.path}
                     asChild
                     onClick={() => handleChildClick(item.path, child.name)}
-                    className='inline-block text-center text-theme-primary font-bold'
+                    className='inline-block text-center text-theme-primary font-bold hover:bg-theme-accent/50'
                   >
                     <Link href={child.path} className='hover:text-theme-primary font-bold'>{child.name}</Link>
                   </DropdownMenuItem>
