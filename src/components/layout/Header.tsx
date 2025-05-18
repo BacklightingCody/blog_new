@@ -33,7 +33,7 @@ const Header = () => {
         <div
           ref={containerRef}
           className={clsx(
-            "relative overflow-hidden rounded-full px-3",
+            "relative overflow-hidden rounded-full",
             {
               "border-b-1 border-theme-primary/20 inset-shadow-sm inset-shadow-theme-primary/10": y < threshold,
             }
@@ -41,7 +41,7 @@ const Header = () => {
         >
           <span
             ref={glowRef}
-            className="absolute pointer-events-none w-[150px] h-[100px] rounded-md blur-sm opacity-10"
+            className="absolute pointer-events-none w-[150px] h-[100px] rounded-md blur-sm opacity-15"
             style={{
               background: "radial-gradient(circle, var(--theme-primary) 0%, transparent 100%)",
               left: "-9999px",

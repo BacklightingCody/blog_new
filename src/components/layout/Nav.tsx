@@ -1,22 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import navPath from '@/routes/nav-path';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem } from '@/components/common/dropdown-menu';
+import { useSliderUnderline } from '@/hooks';
 
 const Nav = () => {
   const currentPath = usePathname();
   const [displayNames, setDisplayNames] = useState<Record<string, string>>({});
+  const navRef = useRef<HTMLElement>(null) as React.RefObject<HTMLElement>;
 
-  // 初始化显示名称
+  // 下划线效果
+
+  const parentPath = useMemo(() => {
+    const match = navPath.find(item => currentPath === item.path || currentPath.startsWith(item.path + '/'));
+    return match?.path || currentPath;
+  }, [currentPath]);
+
+  const { sliderStyle, getItemRef } = useSliderUnderline<HTMLAnchorElement>({
+    activeKey: parentPath,
+    color: 'var(--theme-primary)',
+    animationDuration: 300,
+    animationDelay: 0,
+    containerRef: navRef,
+    height: 2,
+    insetX: 4,
+    bottomOffset: -1,
+  });
+
+  // 初始化或路由变更时更新 displayNames
   useEffect(() => {
     const initialNames = navPath.reduce((acc, item) => {
       acc[item.path] = item.name;
       return acc;
     }, {} as Record<string, string>);
+
+    const currentParent = navPath.find(item =>
+      item.children?.some(child => child.path === currentPath)
+    );
+
+    if (currentParent) {
+      const currentChild = currentParent.children?.find(child => child.path === currentPath);
+      if (currentChild) {
+        initialNames[currentParent.path] = currentChild.name;
+      }
+    }
+
     setDisplayNames(initialNames);
-  }, []);
+  }, [currentPath]);
 
   // 处理子项点击
   const handleChildClick = (parentPath: string, childName: string) => {
@@ -26,37 +58,8 @@ const Nav = () => {
     }));
   };
 
-  // 处理路由变化
-  useEffect(() => {
-    const currentParent = navPath.find(item =>
-      item.children?.some(child => child.path === currentPath)
-    );
-
-    if (currentParent) {
-      const child = currentParent.children?.find(child => child.path === currentPath);
-      if (child) {
-        setDisplayNames(prev => ({
-          ...prev,
-          [currentParent.path]: child.name
-        }));
-      }
-    } else {
-      // 如果当前路径不是任何子项，恢复父级名称
-      navPath.forEach(item => {
-        if (item.children) {
-          setDisplayNames(prev => ({
-            ...prev,
-            [item.path]: item.name
-          }));
-        }
-      });
-    }
-  }, [currentPath]);
-
   return (
-    <nav className={
-      clsx('flex items-center space-x-3')
-    }>
+    <nav ref={navRef} className={clsx('flex items-center relative px-3')}>
       {navPath.map((item) => {
         const isActive = currentPath === item.path || currentPath.startsWith(item.path + "/");
         return item.children ? (
@@ -65,18 +68,10 @@ const Nav = () => {
               <Link
                 key={item.path}
                 href={item.path}
-                className="relative px-3 py-2 group text-theme-primary"
+                className="relative px-4 py-2 group text-theme-primary"
+                ref={getItemRef(item.path)}
               >
                 {displayNames[item.path] || item.name}
-                <span
-                  className={clsx(
-                    'absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-theme-primary to-transparent transition-opacity',
-                    {
-                      'opacity-100': isActive,
-                      'opacity-0 group-hover:opacity-100': !isActive,
-                    }
-                  )}
-                />
               </Link>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="center" triggerRect={null} className='top-[10px]'>
@@ -96,7 +91,7 @@ const Nav = () => {
                     key={child.path}
                     asChild
                     onClick={() => handleChildClick(item.path, child.name)}
-                    className='inline-block text-center text-theme-primary font-bold hover:bg-theme-accent/50'
+                    className='inline-block text-center text-theme-primary font-bold'
                   >
                     <Link href={child.path} className='hover:text-theme-primary font-bold'>{child.name}</Link>
                   </DropdownMenuItem>
@@ -108,21 +103,21 @@ const Nav = () => {
           <Link
             key={item.path}
             href={item.path}
-            className="relative px-3 py-2 group text-theme-primary"
+            className="relative px-4 py-2 group text-theme-primary"
+            ref={getItemRef(item.path)}
           >
             <span className="relative z-10">{item.name}</span>
-            <span
-              className={clsx(
-                'absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-theme-primary to-transparent transition-opacity',
-                {
-                  'opacity-100': isActive,
-                  'opacity-0 group-hover:opacity-100': !isActive,
-                }
-              )}
-            />
           </Link>
         );
       })}
+      <div
+        className="absolute pointer-events-none transition-all duration-300"
+        style={{
+          ...sliderStyle,
+          position: 'absolute',
+          pointerEvents: 'none',
+        }}
+      />
     </nav>
   );
 };
