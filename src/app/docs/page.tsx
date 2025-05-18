@@ -1,6 +1,6 @@
 import { Suspense } from "react"
-import BlogList from "@/components/features/blog-list"
-import TimeStats from "@/components/features/time-stats"
+import BlogList from "@/components/features/docs/blog-list"
+import TimeStats from "@/components/features/docs/time-stats"
 import { Skeleton } from "@/components/ui/skeleton"
 
 export default function BlogPage() {

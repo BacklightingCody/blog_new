@@ -19,6 +19,7 @@
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "dom-to-image": "^2.6.0",
     "framer-motion": "^12.9.4",
     "hash-sum": "^2.0.0",

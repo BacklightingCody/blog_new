@@ -1,12 +1,22 @@
-export default function Docs() {
+import type { Metadata } from "next"
+import BlogCategories from "@/components/features/docs/blog-categories"
+import BlogTimeline from "@/components/features/docs/blog-timeline"
+import { CategoryProvider } from "@/components/features/docs/category-provider"
+
+export const metadata: Metadata = {
+  title: "博客 | 分类文章",
+  description: "浏览不同分类的博客文章",
+}
+
+export default function BlogPage() {
   return (
-    <div className="col-span-5 p-4 flex flex-col align-center justify-center">
-      <img src="/avatar.jpg" className='rounded-full w-[80%]' />
-      <h1
-        className="text-3xl py-5 text-center font-bold text-theme-primary"
-      >
-        愿你我都能做生活的高手!
-      </h1>
-    </div>
+    <CategoryProvider>
+      <main className="mx-auto w-[70%] py-12">
+        <BlogCategories />
+        <div className="mt-8">
+          <BlogTimeline />
+        </div>
+      </main>
+    </CategoryProvider>
   )
 }
