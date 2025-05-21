@@ -4,79 +4,26 @@ import { useState, useRef, useEffect } from "react"
 import { motion, useAnimation, useInView } from "framer-motion"
 import { Clock, Eye, MessageSquare, ThumbsUp, Tag } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-
-type Article = {
-  id: number
-  title: string
-  date: string
-  category: string
-  tags: string[]
-  views: number
-  likes: number
-  comments: number
-}
-
-// 模拟数据
-const INITIAL_ARTICLES: Article[] = [
-  {
-    id: 1,
-    title: "使用 React Native Screens 构建一个 Simple Navigation",
-    date: "10 天前 (已编辑)",
-    category: "技术",
-    tags: ["react-native", "react"],
-    views: 225,
-    likes: 4,
-    comments: 0,
-  },
-  {
-    id: 2,
-    title: "使用 React Native Screens 构建一个 Native Navigation 之内部原理",
-    date: "2025 年 4 月 16 日 星期三 (已编辑)",
-    category: "技术",
-    tags: ["react-native", "react"],
-    views: 397,
-    likes: 2,
-    comments: 3,
-  },
-  {
-    id: 3,
-    title: "使用 React Native Screens 构建一个 Native Navigation（一）",
-    date: "2025 年 3 月 21 日 星期五 (已编辑)",
-    category: "技术",
-    tags: ["react-native"],
-    views: 544,
-    likes: 5,
-    comments: 2,
-  },
-  {
-    id: 4,
-    title: "React Native 预载 WebView 加速内容呈现",
-    date: "2025 年 3 月 20 日 星期四 (已编辑)",
-    category: "技术",
-    tags: ["react-native"],
-    views: 711,
-    likes: 7,
-    comments: 4,
-  },
-]
-
+import { Article, getAllArticles } from "@mock/docs"
+import TimeStats from './time-stats'
 export default function BlogList() {
-  const [articles, setArticles] = useState<Article[]>(INITIAL_ARTICLES)
+  const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1)
   const observerRef = useRef<HTMLDivElement>(null)
 
-  // 模拟加载更多文章
-  const loadMoreArticles = async () => {
+  // 加载文章
+  const loadArticles = async () => {
     if (loading) return
 
     setLoading(true)
     // 模拟API请求延迟
     await new Promise((resolve) => setTimeout(resolve, 1000))
 
-    const newArticles = [...INITIAL_ARTICLES].map((article) => ({
+    const initialArticles = getAllArticles()
+    const newArticles = [...initialArticles].map((article) => ({
       ...article,
-      id: article.id + page * INITIAL_ARTICLES.length,
+      id: article.id + page * initialArticles.length,
     }))
 
     setArticles((prev) => [...prev, ...newArticles])
@@ -89,7 +36,7 @@ export default function BlogList() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !loading) {
-          loadMoreArticles()
+          loadArticles()
         }
       },
       { threshold: 0.1 },
@@ -106,8 +53,14 @@ export default function BlogList() {
     }
   }, [loading])
 
+  // 初始加载
+  useEffect(() => {
+    loadArticles()
+  }, [])
+
   return (
     <div className="space-y-4">
+      <TimeStats />
       <div className="space-y-0">
         {articles.map((article) => (
           <ArticleItem key={article.id} article={article} />
@@ -158,7 +111,7 @@ function ArticleItem({ article }: { article: Article }) {
       <div className="relative">
         <div className="my-3">
           <div className="relative inline-block">
-            <a href={`/blog/${article.id}`} className="text-xl font-medium hover:text-primary transition-colors">
+            <a href={`/blog/${article.slug}`} className="text-xl font-medium hover:text-primary transition-colors">
               {article.title}
             </a>
 

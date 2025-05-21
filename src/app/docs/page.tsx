@@ -1,40 +1,16 @@
-import { Suspense } from "react"
+import type { Metadata } from "next"
 import BlogList from "@/components/features/docs/blog-list"
-import TimeStats from "@/components/features/docs/time-stats"
-import { Skeleton } from "@/components/ui/skeleton"
 
-export default function BlogPage() {
-  return (
-    <div className="mx-auto px-4 py-8">
-      <TimeStats />
-      <div className="mt-8">
-        <Suspense fallback={<BlogListSkeleton />}>
-          <BlogList />
-        </Suspense>
-      </div>
-    </div>
-  )
+export const metadata: Metadata = {
+  title: "文档 - 我的网站",
+  description: "浏览所有文档和文章",
 }
 
-function BlogListSkeleton() {
+export default function DocsPage() {
   return (
-    <div className="space-y-4">
-      {Array(5)
-        .fill(0)
-        .map((_, i) => (
-          <div key={i} className="p-6 rounded-lg">
-            <Skeleton className="h-8 w-3/4 mb-4" />
-            <div className="flex gap-2 mb-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-24" />
-            </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-16" />
-            </div>
-          </div>
-        ))}
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="mb-8 text-3xl font-bold">所有文章</h1>
+      <BlogList />
     </div>
   )
 }

@@ -1,22 +1,21 @@
 import type { Metadata } from "next"
-import BlogCategories from "@/components/features/docs/blog-categories"
 import BlogTimeline from "@/components/features/docs/blog-timeline"
-import { CategoryProvider } from "@/components/features/docs/category-provider"
 
-export const metadata: Metadata = {
-  title: "博客 | 分类文章",
-  description: "浏览不同分类的博客文章",
+export async function generateMetadata({ params }: { params: { category: string } }) {
+  const category = params.category
+  const pageTitle = category.charAt(0).toUpperCase() + category.slice(1)
+  return {
+    title: `${pageTitle} 文档 - 我的网站`,
+    description: `浏览关于 ${pageTitle} 的文档和文章`,
+  }
 }
 
-export default function BlogPage() {
+export default function CategoryDocPage({ params }: { params: { category: string } }) {
+  const category = params.category
   return (
-    <CategoryProvider>
-      <main className="mx-auto w-[70%] py-12">
-        <BlogCategories />
-        <div className="mt-8">
-          <BlogTimeline />
-        </div>
-      </main>
-    </CategoryProvider>
+    <div className="mx-auto w-[70%] py-12">
+      {/* 这里需要一个面包屑导航 */}
+      <BlogTimeline category={category} />
+    </div>
   )
 }
