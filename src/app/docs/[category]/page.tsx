@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import BlogTimeline from "@/components/features/docs/blog-timeline"
+import BreadcrumbNav from "@/components/features/docs/breadcrumb"
 
 export async function generateMetadata({ params }: { params: { category: string } }) {
   const category = params.category
@@ -14,7 +15,7 @@ export default function CategoryDocPage({ params }: { params: { category: string
   const category = params.category
   return (
     <div className="mx-auto w-[70%] py-12">
-      {/* 这里需要一个面包屑导航 */}
+      <BreadcrumbNav category={category} />
       <BlogTimeline category={category} />
     </div>
   )
