@@ -16,7 +16,7 @@ export function CustomCardContent({ title, description, date, tags }: CustomCard
     <>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-2">
-          <CardTitle className="text-lg font-semibold leading-tight group-hover:text-blue-600 transition-colors">
+          <CardTitle className="text-lg font-semibold leading-tight group-hover:text-theme-secondary transition-colors">
             {title}
           </CardTitle>
           <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
@@ -39,7 +39,7 @@ export function CustomCardContent({ title, description, date, tags }: CustomCard
             <Badge
               key={tag}
               variant="secondary"
-              className="text-xs px-2 py-0.5 bg-gray-100 hover:bg-gray-200 transition-colors"
+              className="text-xs px-2 py-0.5 bg-theme-primary/10 hover:bg-theme-accent transition-colors"
             >
               {tag}
             </Badge>

@@ -28,10 +28,6 @@ export default function DemoPage() {
           </div>
           <div className="text-sm text-muted-foreground">标签</div>
         </div>
-        <div className="text-center">
-          <div className="text-2xl font-bold text-purple-600">{new Date().getFullYear()}</div>
-          <div className="text-sm text-muted-foreground">年份</div>
-        </div>
       </div>
 
       {/* Demo Grid */}
