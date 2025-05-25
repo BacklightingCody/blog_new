@@ -1,3 +1,4 @@
+'use client'
 // src/app/demo/layout.tsx
 import React from 'react';
 import Sidebar from '@/components/layout/Sidebar';

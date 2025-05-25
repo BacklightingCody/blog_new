@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect,useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useThemeStore, themes } from '@/zustand/themeStore';
 
-export function ThemeSelector() {
+export const ThemeSelector = React.memo(function ThemeSelector() {
   const { colorTheme, setColorTheme } = useThemeStore();
   const initialized = useRef(false);
 
@@ -58,3 +58,4 @@ export function ThemeSelector() {
     </DropdownMenu>
   );
 }
+)
