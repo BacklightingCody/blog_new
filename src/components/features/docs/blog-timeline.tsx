@@ -15,9 +15,9 @@ interface BlogTimelineProps {
 export default function BlogTimeline({ category }: BlogTimelineProps) {
   const [hoveredArticle, setHoveredArticle] = useState<number | null>(null)
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
-  
+
   const articles = getArticlesByCategory(category)
-  
+
   // 获取所有标签
   const allTags = useMemo(() => {
     const tags = new Set<string>()
@@ -90,7 +90,7 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
           <ul className="space-y-6">
             {filteredArticles.map((article) => (
               <motion.li
-                key={article.id}
+                key={`${article.category}-${article.id}`}
                 className="relative pl-8"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

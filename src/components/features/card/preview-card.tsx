@@ -77,7 +77,7 @@ export function PreviewCard({
       <div className="relative overflow-hidden">
         <div className="aspect-[7/4] relative">
           <Image
-            src={coverImage || "/placeholder.svg"}
+            src={coverImage || "/cover/default_cover_01.jpg"}
             alt={coverAlt}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"

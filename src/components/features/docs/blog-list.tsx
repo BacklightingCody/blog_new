@@ -63,7 +63,7 @@ export default function BlogList() {
       <TimeStats />
       <div className="space-y-0">
         {articles.map((article) => (
-          <ArticleItem key={article.id} article={article} />
+          <ArticleItem key={`${article.category}-${article.id}`} article={article} />
         ))}
       </div>
 

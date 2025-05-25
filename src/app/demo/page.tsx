@@ -3,9 +3,13 @@
 import { PreviewCard } from "@/components/features/card/preview-card"
 import { CustomCardContent } from "@/components/features/card/card-content"
 import { demos } from '@mock/demo'
-
+import useCoverImage from '@/hooks/useCoverImage';
+import { DEFAULT_COVER_IMAGE_NAMES } from '@/constants/default_cover';
 
 export default function DemoPage() {
+   // 获取一个随机的 cover 图片
+  const getCoverPath = useCoverImage(DEFAULT_COVER_IMAGE_NAMES);
+ 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
@@ -35,7 +39,7 @@ export default function DemoPage() {
         {demos.map((demo) => (
           <PreviewCard
             key={demo.id}
-            coverImage={demo.coverImage}
+            coverImage={demo.coverImage || getCoverPath()}
             previewUrl={demo.href}
             href={demo.href}
             coverAlt={demo.title}
