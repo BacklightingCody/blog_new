@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 
 interface PreviewCardProps {
@@ -37,6 +38,7 @@ export function PreviewCard({
   hoverEffect = true,
   previewScale = 0.3, // 默认缩放比例为 0.3
 }: PreviewCardProps) {
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [isIframeLoaded, setIsIframeLoaded] = useState(false);
   const [shouldLoadIframe, setShouldLoadIframe] = useState(false);
@@ -87,12 +89,17 @@ export function PreviewCard({
   return (
     <div
       ref={cardRef}
-      className={`group relative rounded-lg shadow-md overflow-hidden transition-all duration-300 ${
-        hoverEffect ? "hover:shadow-lg" : ""
-      } ${className}`}
+      className={`group relative rounded-lg shadow-md overflow-hidden transition-all duration-300 ${hoverEffect ? "hover:shadow-lg" : ""
+        } ${className}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      <Link
+        href={href}
+        className="absolute inset-x-0 top-0 z-20 aspect-video"
+        aria-label={`View details for ${previewTitle}`}
+      />
+
       {/* 封面图片容器 */}
       <div className="relative aspect-video">
         {/* 封面图片 */}
@@ -111,18 +118,26 @@ export function PreviewCard({
 
         {/* iframe 预览 */}
         {shouldLoadIframe && (
-          <div className={cn(
-            "absolute inset-0 transition-opacity duration-300 overflow-hidden",
-            isHovered && isIframeLoaded ? "opacity-100" : "opacity-0"
-          )}>
-            <div style={scaleContainerStyle}>
-              <iframe
-                ref={iframeRef}
-                src={previewUrl}
-                className="w-full h-full"
-                onLoad={handleIframeLoad}
-                title={previewTitle}
-              />
+          <div
+            className="absolute inset-0 z-10"
+            onClick={() => router.push(href)}
+            aria-label={`查看 ${previewTitle} 的详细信息`}
+            role="link"
+            tabIndex={0}
+          >
+            <div className={cn(
+              "absolute inset-0 transition-opacity duration-300 overflow-hidden",
+              isHovered && isIframeLoaded ? "opacity-100" : "opacity-0"
+            )}>
+              <div style={scaleContainerStyle}>
+                <iframe
+                  ref={iframeRef}
+                  src={previewUrl}
+                  className="w-full h-full"
+                  onLoad={handleIframeLoad}
+                  title={previewTitle}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -139,13 +154,6 @@ export function PreviewCard({
       <div className="p-4">
         {children}
       </div>
-
-      {/* 链接覆盖层 */}
-      <Link
-        href={href}
-        className="absolute inset-0 z-10"
-        aria-label={`查看 ${previewTitle} 的详细信息`}
-      />
     </div>
   );
 }
