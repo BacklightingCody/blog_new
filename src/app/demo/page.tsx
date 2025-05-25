@@ -5,11 +5,26 @@ import { CustomCardContent } from "@/components/features/card/card-content"
 import { demos } from '@mock/demo'
 import useCoverImage from '@/hooks/useCoverImage';
 import { DEFAULT_COVER_IMAGE_NAMES } from '@/constants/default_cover';
+import { useMemo } from 'react';
 
 export default function DemoPage() {
-   // 获取一个随机的 cover 图片
+  // 使用 useMemo 缓存 getCoverPath 函数
   const getCoverPath = useCoverImage(DEFAULT_COVER_IMAGE_NAMES);
- 
+  
+  // 使用 useMemo 缓存随机封面图片
+  const randomCoverImage = useMemo(() => {
+    return getCoverPath();
+  }, [getCoverPath]);
+
+  // 使用 useMemo 缓存标签统计和标签列表
+  const { uniqueTagsCount, uniqueTags } = useMemo(() => {
+    const tags = Array.from(new Set(demos.flatMap((d) => d.tags || [])));
+    return {
+      uniqueTagsCount: tags.length,
+      uniqueTags: tags
+    };
+  }, [demos]);
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
@@ -27,11 +42,21 @@ export default function DemoPage() {
           <div className="text-sm text-muted-foreground">Demo 数量</div>
         </div>
         <div className="text-center">
-          <div className="text-2xl font-bold text-green-600">
-            {Array.from(new Set(demos.flatMap((d) => d.tags))).length}
-          </div>
+          <div className="text-2xl font-bold text-green-600">{uniqueTagsCount}</div>
           <div className="text-sm text-muted-foreground">标签</div>
         </div>
+      </div>
+
+      {/* Tags */}
+      <div className="flex flex-wrap justify-center gap-2 mb-12">
+        {uniqueTags.map((tag) => (
+          <span
+            key={tag}
+            className="px-3 py-1 bg-theme-accent rounded-full text-sm hover:bg-theme-primary transition-colors cursor-pointer"
+          >
+            {tag}
+          </span>
+        ))}
       </div>
 
       {/* Demo Grid */}
@@ -39,7 +64,7 @@ export default function DemoPage() {
         {demos.map((demo) => (
           <PreviewCard
             key={demo.id}
-            coverImage={demo.coverImage || getCoverPath()}
+            coverImage={demo.coverImage || randomCoverImage}
             previewUrl={demo.href}
             href={demo.href}
             coverAlt={demo.title}
@@ -52,7 +77,7 @@ export default function DemoPage() {
 
       {/* Load More */}
       <div className="text-center mt-12">
-        <button className="px-6 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm font-medium">
+        <button className="px-6 py-3 bg-theme-primary hover:bg-theme-accnt rounded-lg transition-colors text-sm font-medium">
           加载更多 Demo
         </button>
       </div>

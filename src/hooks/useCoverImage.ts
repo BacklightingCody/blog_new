@@ -1,6 +1,6 @@
 "use client"
 // src/utils/useCoverImage.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo } from 'react';
 
 /**
  * 一个 React Hook，用于获取默认 Cover 图片。
@@ -13,59 +13,46 @@ import { useState, useEffect, useCallback } from 'react';
  * 如果未传入文件名，则随机返回一个图片的路径。
  */
 const useCoverImage = (imageNames: string[]): ((specifiedImageName?: string) => string) => {
-  // 仅在客户端运行时存储随机选择的图片名称
-  const [randomSelectedImage, setRandomSelectedImage] = useState<string | undefined>(undefined);
-
-  // 确保 imageNames 数组有效
-  if (!ArrayOfStrings(imageNames) || imageNames.length === 0) {
-    console.warn('useCoverImage: 未提供有效的图片名称列表。将返回空字符串。');
-    return (_?: string) => '';
-  }
-
-  // 在客户端挂载后，首次生成一个随机图片，并存储起来
-  useEffect(() => {
-    if (imageNames.length > 0 && randomSelectedImage === undefined) {
-      const randomIndex = Math.floor(Math.random() * imageNames.length);
-      setRandomSelectedImage(imageNames[randomIndex]);
+  // 使用 useMemo 缓存随机选择的图片
+  const randomImage = useMemo(() => {
+    if (!ArrayOfStrings(imageNames) || imageNames.length === 0) {
+      console.warn('useCoverImage: 未提供有效的图片名称列表。将返回空字符串。');
+      return '';
     }
-  }, [imageNames, randomSelectedImage]); // 依赖 imageNames 和 randomSelectedImage
+    const randomIndex = Math.floor(Math.random() * imageNames.length);
+    return imageNames[randomIndex];
+  }, [imageNames]);
 
-  const getCoverImage = useCallback(
-    (specifiedImageName?: string): string => {
+  // 使用 useMemo 缓存 getCoverImage 函数
+  return useMemo(() => {
+    return (specifiedImageName?: string): string => {
+      if (!ArrayOfStrings(imageNames) || imageNames.length === 0) {
+        return '';
+      }
+
       let finalImageName: string;
 
       if (specifiedImageName) {
-        // 如果指定了图片名称，检查它是否在可用列表中
         if (imageNames.includes(specifiedImageName)) {
           finalImageName = specifiedImageName;
         } else {
           console.warn(
-            `useCoverImage: 指定的图片 "${specifiedImageName}" 不存在于可用图片列表中。将尝试返回随机选择的图片。`
+            `useCoverImage: 指定的图片 "${specifiedImageName}" 不存在于可用图片列表中。将使用随机选择的图片。`
           );
-          // 如果指定图片不存在，则使用之前随机选择的图片，或者如果还没有，则立即随机选一个
-          finalImageName = randomSelectedImage || imageNames[Math.floor(Math.random() * imageNames.length)];
+          finalImageName = randomImage;
         }
       } else {
-        // 如果没有指定图片名称，则使用之前随机选择的图片，或者如果还没有，则立即随机选一个
-        finalImageName = randomSelectedImage || imageNames[Math.floor(Math.random() * imageNames.length)];
+        finalImageName = randomImage;
       }
 
-      // 如果最终还是没有图片名（例如 imageNames 为空，或者 randomSelectedImage 初始为空），返回空字符串
-      if (!finalImageName) {
-          return '';
-      }
-
-      return `/cover/${finalImageName}`;
-    },
-    [imageNames, randomSelectedImage] // 依赖 imageNames 和 randomSelectedImage
-  );
-
-  return getCoverImage;
+      return finalImageName ? `/cover/${finalImageName}` : '';
+    };
+  }, [imageNames, randomImage]);
 };
 
 // 辅助函数，确保传入的是字符串数组
 function ArrayOfStrings(value: any): value is string[] {
-    return Array.isArray(value) && value.every(item => typeof item === 'string');
+  return Array.isArray(value) && value.every(item => typeof item === 'string');
 }
 
 export default useCoverImage;
