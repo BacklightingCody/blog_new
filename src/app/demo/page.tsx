@@ -5,25 +5,61 @@ import { CustomCardContent } from "@/components/features/card/card-content"
 import { demos } from '@mock/demo'
 import useCoverImage from '@/hooks/useCoverImage';
 import { DEFAULT_COVER_IMAGE_NAMES } from '@/constants/default_cover';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import Image from 'next/image';
+
+// 使用 Intersection Observer 实现懒加载
+const useIntersectionObserver = (callback: () => void) => {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            callback();
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const element = document.getElementById('demo-grid');
+    if (element) {
+      observer.observe(element);
+    }
+
+    return () => observer.disconnect();
+  }, [callback]);
+};
 
 export default function DemoPage() {
-  // 使用 useMemo 缓存 getCoverPath 函数
+  const [isVisible, setIsVisible] = useState(false);
   const getCoverPath = useCoverImage(DEFAULT_COVER_IMAGE_NAMES);
-  
-  // 使用 useMemo 缓存随机封面图片
-  const randomCoverImage = useMemo(() => {
-    return getCoverPath();
-  }, [getCoverPath]);
+  const randomCoverImage = useMemo(() => getCoverPath(), []);
 
-  // 使用 useMemo 缓存标签统计和标签列表
+  // 使用 Intersection Observer 检测元素是否可见
+  useIntersectionObserver(() => {
+    setIsVisible(true);
+  });
+
   const { uniqueTagsCount, uniqueTags } = useMemo(() => {
     const tags = Array.from(new Set(demos.flatMap((d) => d.tags || [])));
     return {
       uniqueTagsCount: tags.length,
       uniqueTags: tags
     };
-  }, [demos]);
+  }, []);
+
+  // 分批加载数据
+  const [visibleDemos, setVisibleDemos] = useState(demos.slice(0, 6));
+  const [hasMore, setHasMore] = useState(demos.length > 6);
+
+  const loadMore = () => {
+    const currentLength = visibleDemos.length;
+    const nextBatch = demos.slice(currentLength, currentLength + 6);
+    setVisibleDemos(prev => [...prev, ...nextBatch]);
+    setHasMore(currentLength + 6 < demos.length);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
@@ -60,8 +96,8 @@ export default function DemoPage() {
       </div>
 
       {/* Demo Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {demos.map((demo) => (
+      <div id="demo-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {isVisible && visibleDemos.map((demo) => (
           <PreviewCard
             key={demo.id}
             coverImage={demo.coverImage || randomCoverImage}
@@ -70,17 +106,27 @@ export default function DemoPage() {
             coverAlt={demo.title}
             previewTitle={demo.title}
           >
-            <CustomCardContent title={demo.title} description={demo.description} date={demo.date} tags={demo.tags} />
+            <CustomCardContent 
+              title={demo.title} 
+              description={demo.description} 
+              date={demo.date} 
+              tags={demo.tags} 
+            />
           </PreviewCard>
         ))}
       </div>
 
       {/* Load More */}
-      <div className="text-center mt-12">
-        <button className="px-6 py-3 bg-theme-primary hover:bg-theme-accnt rounded-lg transition-colors text-sm font-medium">
-          加载更多 Demo
-        </button>
-      </div>
+      {hasMore && (
+        <div className="text-center mt-12">
+          <button 
+            onClick={loadMore}
+            className="px-6 py-3 bg-theme-primary hover:bg-theme-accnt rounded-lg transition-colors text-sm font-medium"
+          >
+            加载更多 Demo
+          </button>
+        </div>
+      )}
     </div>
   )
 }

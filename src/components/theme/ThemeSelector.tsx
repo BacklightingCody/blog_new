@@ -39,7 +39,7 @@ export const ThemeSelector = React.memo(function ThemeSelector() {
           />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="p-2 grid grid-cols-7 gap-2">
+      <DropdownMenuContent align="end" className="p-2 grid grid-cols-7 gap-2 z-999">
         {themes.map((theme) => (
           <DropdownMenuItem
             key={theme.id}

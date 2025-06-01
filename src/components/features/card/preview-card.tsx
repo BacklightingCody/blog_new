@@ -118,26 +118,18 @@ export function PreviewCard({
 
         {/* iframe 预览 */}
         {shouldLoadIframe && (
-          <div
-            className="absolute inset-0 z-10"
-            onClick={() => router.push(href)}
-            aria-label={`查看 ${previewTitle} 的详细信息`}
-            role="link"
-            tabIndex={0}
-          >
-            <div className={cn(
-              "absolute inset-0 transition-opacity duration-300 overflow-hidden",
-              isHovered && isIframeLoaded ? "opacity-100" : "opacity-0"
-            )}>
-              <div style={scaleContainerStyle}>
-                <iframe
-                  ref={iframeRef}
-                  src={previewUrl}
-                  className="w-full h-full"
-                  onLoad={handleIframeLoad}
-                  title={previewTitle}
-                />
-              </div>
+          <div className={cn(
+            "absolute inset-0 transition-opacity duration-300 overflow-hidden",
+            isHovered && isIframeLoaded ? "opacity-100" : "opacity-0"
+          )}>
+            <div style={scaleContainerStyle}>
+              <iframe
+                ref={iframeRef}
+                src={previewUrl}
+                className="w-full h-full"
+                onLoad={handleIframeLoad}
+                title={previewTitle}
+              />
             </div>
           </div>
         )}
