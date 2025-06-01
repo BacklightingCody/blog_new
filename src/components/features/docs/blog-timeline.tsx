@@ -85,7 +85,7 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
 
       {/* 文章时间线 */}
       <div className="relative">
-        <div className="absolute left-[14px] top-0 h-full w-[2px] bg-theme-primary/30" />
+        <div className="absolute left-2 top-0 h-full w-[2px] bg-theme-primary/30" />
         <AnimatePresence mode="wait">
           <ul className="space-y-6">
             {filteredArticles.map((article) => (
