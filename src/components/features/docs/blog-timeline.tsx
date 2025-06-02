@@ -99,7 +99,7 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
               >
                 <div className="absolute left-0 top-1.5 h-4 w-4 rounded-full border-1 bg-theme-secondary" />
                 <Link
-                  href={`/blog/${article.slug}`}
+                  href={`/docs/${article.category}/${article.slug}`}
                   className="group block"
                   onMouseEnter={() => setHoveredArticle(article.id)}
                   onMouseLeave={() => setHoveredArticle(null)}

@@ -10,34 +10,38 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import React from "react"
 
-interface BreadcrumbNavProps {
-  category: string
+interface BreadcrumbItem {
+  label: string
+  href?: string
+  icon?: React.ReactNode
 }
 
-export default function BreadcrumbNav({ category }: BreadcrumbNavProps) {
-  const categoryName = {
-    programming: "编程",
-    recipe: "食谱",
-    ai: "AI",
-  }[category] || category
+interface BreadcrumbNavProps {
+  items: BreadcrumbItem[]
+  className?: string
+}
 
+export default function BreadcrumbNav({ items, className = "" }: BreadcrumbNavProps) {
   return (
-    <Breadcrumb className="mb-8">
+    <Breadcrumb className={`mb-8 ${className}`}>
       <BreadcrumbList>
-        <BreadcrumbItem>
-          <BreadcrumbLink href="/" className="flex items-center">
-            <Home className="h-4 w-4" />
-          </BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbLink href="/docs">文稿</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
-          <BreadcrumbPage>{categoryName}</BreadcrumbPage>
-        </BreadcrumbItem>
+        {items.map((item, index) => (
+          <React.Fragment key={item.label}>
+            <BreadcrumbItem>
+              {item.href ? (
+                <BreadcrumbLink href={item.href} className="flex items-center gap-1">
+                  {item.icon}
+                  {item.label}
+                </BreadcrumbLink>
+              ) : (
+                <BreadcrumbPage>{item.label}</BreadcrumbPage>
+              )}
+            </BreadcrumbItem>
+            {index < items.length - 1 && <BreadcrumbSeparator />}
+          </React.Fragment>
+        ))}
       </BreadcrumbList>
     </Breadcrumb>
   )
