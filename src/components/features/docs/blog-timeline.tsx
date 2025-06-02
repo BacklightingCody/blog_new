@@ -4,9 +4,9 @@ import { useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
-import Link from "next/link"
 import { Article, getArticlesByCategory } from "@mock/docs"
 import { cn } from "@/lib/utils"
+import { ArticleLink } from "./article-link"
 
 interface BlogTimelineProps {
   category: string
@@ -98,15 +98,16 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
                 transition={{ duration: 0.3 }}
               >
                 <div className="absolute left-0 top-1.5 h-4 w-4 rounded-full border-1 bg-theme-secondary" />
-                <Link
-                  href={`/docs/${article.category}/${article.slug}`}
+                <div
                   className="group block"
                   onMouseEnter={() => setHoveredArticle(article.id)}
                   onMouseLeave={() => setHoveredArticle(null)}
                 >
                   <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
                     <h3 className="relative text-lg font-medium transition-colors group-hover:text-theme-primary">
-                      {article.title}
+                      <ArticleLink article={article}>
+                        {article.title}
+                      </ArticleLink>
                       <div className="relative">
                         {hoveredArticle === article.id && (
                           <motion.div
@@ -121,7 +122,7 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
                     </h3>
                     <time className="text-sm text-muted-foreground">{formatDate(article.date)}</time>
                   </div>
-                </Link>
+                </div>
               </motion.li>
             ))}
           </ul>

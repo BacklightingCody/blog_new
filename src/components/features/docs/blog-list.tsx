@@ -6,6 +6,8 @@ import { Clock, Eye, MessageSquare, ThumbsUp, Tag } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Article, getAllArticles } from "@mock/docs"
 import TimeStats from './time-stats'
+import { ArticleLink } from "./article-link"
+
 export default function BlogList() {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(false)
@@ -111,9 +113,9 @@ function ArticleItem({ article }: { article: Article }) {
       <div className="relative">
         <div className="my-3">
           <div className="relative inline-block">
-            <a href={`/blog/${article.slug}`} className="text-xl font-medium hover:text-primary transition-colors">
+            <ArticleLink article={article} className="text-xl font-medium hover:text-primary transition-colors">
               {article.title}
-            </a>
+            </ArticleLink>
 
             {/* 标题下划线动画 */}
             <motion.div
