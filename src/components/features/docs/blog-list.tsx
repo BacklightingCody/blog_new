@@ -141,7 +141,7 @@ function ArticleItem({ article }: { article: Article }) {
           </div>
 
           <div className="flex items-center">
-            <Badge variant="secondary" className="mr-1">
+            <Badge variant="default" className="mr-1">
               {article.category}
             </Badge>
 

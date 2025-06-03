@@ -2,12 +2,8 @@ import type { Metadata } from "next"
 import BlogTimeline from "@/components/features/docs/blog-timeline"
 import BreadcrumbNav from "@/components/features/docs/breadcrumb"
 import { Home } from "lucide-react"
+import { categoryNameMap } from "@/constants/index"
 
-const categoryNameMap = {
-  programming: "编程",
-  recipe: "食谱",
-  ai: "AI",
-}
 
 export async function generateMetadata({ params }: { params: { category: string } }) {
   const category = params.category

@@ -45,8 +45,8 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
         <button
           onClick={() => setSelectedTag(null)}
           className={cn(
-            "relative rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-theme-primary/10",
-            selectedTag === null ? "bg-theme-primary text-white" : "bg-muted/40"
+            "relative rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-theme-primary cursor-pointer",
+            selectedTag === null ? "bg-theme-primary" : "bg-muted/40"
           )}
         >
           全部
@@ -65,8 +65,8 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
             key={tag}
             onClick={() => setSelectedTag(tag)}
             className={cn(
-              "relative rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-theme-primary/10",
-              selectedTag === tag ? "bg-theme-primary text-white" : "bg-muted/40"
+              "relative rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-theme-primary cursor-pointer",
+              selectedTag === tag ? "bg-theme-primary" : "bg-muted/40"
             )}
           >
             {tag}
@@ -97,7 +97,7 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className="absolute left-0 top-1.5 h-4 w-4 rounded-full border-1 bg-theme-secondary" />
+                <div className="absolute left-[2px] top-1.5 h-[14px] w-[14px] rounded-full border-1 bg-theme-secondary" />
                 <div
                   className="group block"
                   onMouseEnter={() => setHoveredArticle(article.id)}

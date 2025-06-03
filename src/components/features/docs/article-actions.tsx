@@ -16,19 +16,19 @@ interface ArticleActionsProps {
 export function ArticleActions({ likes, bookmarks, comments, onLike, onBookmark, onShare }: ArticleActionsProps) {
   return (
     <>
-      <Separator />
+      <Separator/>
       <div className="p-8 py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm" className="gap-2" onClick={onLike}>
+            <Button variant="outline" size="sm" className="gap-2 hover:bg-theme-accent cursor-pointer" onClick={onLike}>
               <Heart className="h-4 w-4" />
               点赞 ({likes})
             </Button>
-            <Button variant="outline" size="sm" className="gap-2" onClick={onBookmark}>
+            <Button variant="outline" size="sm" className="gap-2 hover:bg-theme-accent cursor-pointer" onClick={onBookmark}>
               <Bookmark className="h-4 w-4" />
               收藏 ({bookmarks})
             </Button>
-            <Button variant="outline" size="sm" className="gap-2" onClick={onShare}>
+            <Button variant="outline" size="sm" className="gap-2 hover:bg-theme-accent cursor-pointer" onClick={onShare}>
               <Share2 className="h-4 w-4" />
               分享
             </Button>

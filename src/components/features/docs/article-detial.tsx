@@ -51,11 +51,11 @@ export function ArticleDetail({
   }
 
   return (
-    <article className="bg-white rounded-lg shadow-sm border">
+    <article className="rounded-lg">
       {/* 文章头部 */}
       <header className="p-8 pb-6">
         <div className="flex items-center gap-2 mb-4">
-          <Badge variant="secondary">{category}</Badge>
+          <Badge variant="default">{category}</Badge>
           {tags.map((tag) => (
             <Badge key={tag} variant="outline">
               {tag}
@@ -63,9 +63,9 @@ export function ArticleDetail({
           ))}
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-900 mb-6 leading-tight">{title}</h1>
+        <h1 className="text-3xl font-bold mb-6 leading-tight">{title}</h1>
 
-        <div className="flex items-center justify-between mb-6">
+        {/* <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Avatar className="h-12 w-12">
               <AvatarImage src={author.avatar || "/placeholder.svg"} alt={author.name} />
@@ -78,7 +78,7 @@ export function ArticleDetail({
               <p className="text-sm text-gray-600">{author.bio}</p>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="flex items-center gap-6 text-sm text-gray-600">
           <div className="flex items-center gap-1">
@@ -96,15 +96,15 @@ export function ArticleDetail({
 
       {/* GPT 摘要区域 */}
       <div className="p-8 py-6">
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="p-6">
+        <Card className="bg-theme-accent/20 border-theme-primary/90">
+          <CardContent className="px-6 py-3">
             <div className="flex items-start gap-3">
-              <div className="bg-blue-100 rounded-full p-2">
-                <MessageCircle className="h-4 w-4 text-blue-600" />
+              <div className="bg-theme-primary/30 rounded-full p-2">
+                <MessageCircle className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="font-semibold text-blue-900 mb-2">AI 生成摘要</h3>
-                <p className="text-blue-800 leading-relaxed">{summary}</p>
+                <h3 className="font-semibold mb-2">AI 生成摘要</h3>
+                <p className="leading-relaxed">{summary}</p>
               </div>
             </div>
           </CardContent>
