@@ -10,6 +10,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import styles from './css/Layout.module.css'
 import svg from '/Backlighting.svg'
 import Signature from '@/components/common/signature'
+import OAuth from '@/components/common/OAuth';
 // import ThemeController from '../theme/ThemeController';
 
 
@@ -52,10 +53,7 @@ const Header = () => {
           <Nav />
         </div>
         <div className='flex items-center space-x-4'>
-          <Avatar className='size-10'>
-            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+          <OAuth />
           <ModeToggle />
           <ThemeSelector />
         </div>
