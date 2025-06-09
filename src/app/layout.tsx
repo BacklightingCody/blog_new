@@ -6,7 +6,7 @@ import Layout from '@/components/layout/Layout'
 import { Providers } from "./providers";
 import ClientClerkProvider from '@/components/theme/ClientClerkProvider';
 import { useEffect, useState } from 'react';
-
+import UserSync from "@/components/user/UserSync";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +34,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ClientClerkProvider>
+          <UserSync />
           <Providers>
             <Layout>{children}</Layout>
           </Providers>
