@@ -1,4 +1,21 @@
+'use client';
 import { create } from 'zustand';
+
+// 基础模式颜色配置
+const baseColors = {
+  light: {
+    backgroundColor: '#ffffff',
+    textColor: '#333333',
+  },
+  dark: {
+    backgroundColor: '#0f172a',
+    textColor: '#e2e8f0',
+  },
+  eye: {
+    backgroundColor: '#f3f9ee',
+    textColor: '#2c3528',
+  }
+};
 
 const themes = [
   {
@@ -11,7 +28,8 @@ const themes = [
       accent: '#93c5fd',
       border: '#dbeafe',
       cardShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.1)',
-      background: '#f0f7ff'
+      background: '#f0f7ff',
+      ...baseColors.light
     },
     dark: {
       primaryColor: '#60a5fa',
@@ -19,7 +37,17 @@ const themes = [
       accent: '#2563eb',
       border: '#1e40af',
       cardShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.25)',
-      background: '#172554'
+      background: '#172554',
+      ...baseColors.dark
+    },
+    eye: {
+      primaryColor: '#5096a5',
+      secondary: '#6baebb',
+      accent: '#90c5ce',
+      border: '#d5e3d0',
+      cardShadow: '0 4px 6px -1px rgba(144, 185, 144, 0.15)',
+      background: '#f3f9ee',
+      ...baseColors.eye
     }
   },
   {
@@ -32,7 +60,8 @@ const themes = [
       accent: '#fca5a5',
       border: '#fee2e2',
       cardShadow: '0 4px 6px -1px rgba(239, 68, 68, 0.1)',
-      background: '#fff5f5'
+      background: '#fff5f5',
+      ...baseColors.light
     },
     dark: {
       primaryColor: '#f87171',
@@ -40,7 +69,17 @@ const themes = [
       accent: '#dc2626',
       border: '#991b1b',
       cardShadow: '0 4px 6px -1px rgba(220, 38, 38, 0.25)',
-      background: '#450a0a'
+      background: '#450a0a',
+      ...baseColors.dark
+    },
+    eye: {
+      primaryColor: '#a55050',
+      secondary: '#bb6b6b',
+      accent: '#ce9090',
+      border: '#d5e3d0',
+      cardShadow: '0 4px 6px -1px rgba(144, 185, 144, 0.15)',
+      background: '#f3f9ee',
+      ...baseColors.eye
     }
   },
   {
@@ -53,7 +92,8 @@ const themes = [
       accent: '#6ee7b7',
       border: '#d1fae5',
       cardShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.1)',
-      background: '#ecfdf5'
+      background: '#ecfdf5',
+      ...baseColors.light
     },
     dark: {
       primaryColor: '#34d399',
@@ -61,7 +101,17 @@ const themes = [
       accent: '#059669',
       border: '#065f46',
       cardShadow: '0 4px 6px -1px rgba(5, 150, 105, 0.25)',
-      background: '#022c22'
+      background: '#022c22',
+      ...baseColors.dark
+    },
+    eye: {
+      primaryColor: '#4a9d50',
+      secondary: '#68b06e',
+      accent: '#8cc790',
+      border: '#d5e3d0',
+      cardShadow: '0 4px 6px -1px rgba(144, 185, 144, 0.15)',
+      background: '#f3f9ee',
+      ...baseColors.eye
     }
   },
   {
@@ -74,7 +124,8 @@ const themes = [
       accent: '#c4b5fd',
       border: '#ede9fe',
       cardShadow: '0 4px 6px -1px rgba(139, 92, 246, 0.1)',
-      background: '#f5f3ff'
+      background: '#f5f3ff',
+      ...baseColors.light
     },
     dark: {
       primaryColor: '#a78bfa',
@@ -82,7 +133,17 @@ const themes = [
       accent: '#7c3aed',
       border: '#5b21b6',
       cardShadow: '0 4px 6px -1px rgba(124, 58, 237, 0.25)',
-      background: '#2e1065'
+      background: '#2e1065',
+      ...baseColors.dark
+    },
+    eye: {
+      primaryColor: '#7a6b9d',
+      secondary: '#9385b3',
+      accent: '#b2a7c9',
+      border: '#d5e3d0',
+      cardShadow: '0 4px 6px -1px rgba(144, 185, 144, 0.15)',
+      background: '#f3f9ee',
+      ...baseColors.eye
     }
   },
   {
@@ -95,7 +156,8 @@ const themes = [
       accent: '#fdba74',
       border: '#ffedd5',
       cardShadow: '0 4px 6px -1px rgba(249, 115, 22, 0.1)',
-      background: '#fff7ed'
+      background: '#fff7ed',
+      ...baseColors.light
     },
     dark: {
       primaryColor: '#fb923c',
@@ -103,7 +165,17 @@ const themes = [
       accent: '#ea580c',
       border: '#9a3412',
       cardShadow: '0 4px 6px -1px rgba(234, 88, 12, 0.25)',
-      background: '#431407'
+      background: '#431407',
+      ...baseColors.dark
+    },
+    eye: {
+      primaryColor: '#b17d45',
+      secondary: '#c6996a',
+      accent: '#d8b592',
+      border: '#d5e3d0',
+      cardShadow: '0 4px 6px -1px rgba(144, 185, 144, 0.15)',
+      background: '#f3f9ee',
+      ...baseColors.eye
     }
   },
   {
@@ -116,7 +188,8 @@ const themes = [
       accent: '#f9a8d4',
       border: '#fce7f3',
       cardShadow: '0 4px 6px -1px rgba(236, 72, 153, 0.1)',
-      background: '#fdf2f8'
+      background: '#fdf2f8',
+      ...baseColors.light
     },
     dark: {
       primaryColor: '#f472b6',
@@ -124,7 +197,17 @@ const themes = [
       accent: '#db2777',
       border: '#831843',
       cardShadow: '0 4px 6px -1px rgba(219, 39, 119, 0.25)',
-      background: '#500724'
+      background: '#500724',
+      ...baseColors.dark
+    },
+    eye: {
+      primaryColor: '#a56b89',
+      secondary: '#bb879f',
+      accent: '#ceaab7',
+      border: '#d5e3d0',
+      cardShadow: '0 4px 6px -1px rgba(144, 185, 144, 0.15)',
+      background: '#f3f9ee',
+      ...baseColors.eye
     }
   },
   {
@@ -137,7 +220,8 @@ const themes = [
       accent: '#5eead4',
       border: '#ccfbf1',
       cardShadow: '0 4px 6px -1px rgba(20, 184, 166, 0.1)',
-      background: '#f0fdfa'
+      background: '#f0fdfa',
+      ...baseColors.light
     },
     dark: {
       primaryColor: '#2dd4bf',
@@ -145,7 +229,17 @@ const themes = [
       accent: '#0d9488',
       border: '#115e59',
       cardShadow: '0 4px 6px -1px rgba(13, 148, 136, 0.25)',
-      background: '#042f2e'
+      background: '#042f2e',
+      ...baseColors.dark
+    },
+    eye: {
+      primaryColor: '#4a9d99',
+      secondary: '#68b0ad',
+      accent: '#8cc7c4',
+      border: '#d5e3d0',
+      cardShadow: '0 4px 6px -1px rgba(144, 185, 144, 0.15)',
+      background: '#f3f9ee',
+      ...baseColors.eye
     }
   }
 ];
