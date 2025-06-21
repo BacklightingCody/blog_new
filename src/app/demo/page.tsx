@@ -28,7 +28,7 @@ const useIntersectionObserver = (callback: () => void) => {
       observer.observe(element);
     }
 
-    return () => observer.disconnect();
+    return () => observer.disconnect(); 
   }, [callback]);
 };
 
@@ -38,7 +38,7 @@ export default function DemoPage() {
   const randomCoverImage = useMemo(() => getCoverPath(), []);
 
   // 使用 Intersection Observer 检测元素是否可见
-  useIntersectionObserver(() => {
+  useIntersectionObserver(() => { 
     setIsVisible(true);
   });
 

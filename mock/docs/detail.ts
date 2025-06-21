@@ -1,5 +1,7 @@
+import { generateId } from "../utils"
+
 export const article = {
-  id: "1",
+  id: generateId().toString(),
   title: "深入理解 React 18 的并发特性：Suspense 和 Concurrent Rendering",
   author: {
     name: "张三",

@@ -1,8 +1,9 @@
 import { Article } from "./types"
+import { generateId } from "../utils"
 
 export const recipeArticles: Article[] = [
   {
-    id: 1,
+    id: generateId(),
     title: "家常红烧肉的做法",
     date: "2024-04-10",
     category: "recipe",
@@ -13,7 +14,7 @@ export const recipeArticles: Article[] = [
     comments: 3,
   },
   {
-    id: 2,
+    id: generateId(),
     title: "完美蒸蛋的秘诀",
     date: "2024-03-25",
     category: "recipe",
@@ -24,7 +25,7 @@ export const recipeArticles: Article[] = [
     comments: 5,
   },
   {
-    id: 3,
+    id: generateId(),
     title: "自制意大利面的技巧",
     date: "2024-03-15",
     category: "recipe",

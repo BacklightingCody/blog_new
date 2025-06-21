@@ -1,8 +1,9 @@
 import { Article } from "./types"
+import { generateId } from "../utils"
 
 export const aiArticles: Article[] = [
   {
-    id: 1,
+    id: generateId(),
     title: "ChatGPT API 使用指南",
     date: "2024-04-12",
     category: "ai",
@@ -13,7 +14,7 @@ export const aiArticles: Article[] = [
     comments: 8,
   },
   {
-    id: 2,
+    id: generateId(),
     title: "Stable Diffusion 本地部署教程",
     date: "2024-03-28",
     category: "ai",
@@ -24,7 +25,7 @@ export const aiArticles: Article[] = [
     comments: 4,
   },
   {
-    id: 3,
+    id: generateId(),
     title: "AI 辅助编程实践",
     date: "2024-03-20",
     category: "ai",

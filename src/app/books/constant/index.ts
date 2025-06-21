@@ -1,3 +1,4 @@
+'use client'
 import { BookOpen, Code, BookText, Sparkles, X } from "lucide-react"
 import { useFixedId } from '@/hooks'
 export const categories = [
@@ -91,7 +92,7 @@ const bookList = {
   ],
   novels: [
     {
-      id: 4,
+      id: 9,
       title: "十日终焉",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -101,7 +102,7 @@ const bookList = {
       tags: ["末世", "科幻", "求生"],
     },
     {
-      id: 5,
+      id: 10,
       title: "我不是戏神",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -111,7 +112,7 @@ const bookList = {
       tags: ["都市", "逆袭", "娱乐圈"],
     },
     {
-      id: 6,
+      id: 11,
       title: "我在精神病院学斩神",
       cover: "/books/novel/default.jpg",
       progress: 30,
@@ -121,7 +122,7 @@ const bookList = {
       tags: ["都市", "悬疑", "异能"],
     },
     {
-      id: 7,
+      id: 12,
       title: "万古神帝",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -131,7 +132,7 @@ const bookList = {
       tags: ["玄幻", "修炼", "热血"],
     },
     {
-      id: 8,
+      id: 13,
       title: "龙王出狱",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -141,7 +142,7 @@ const bookList = {
       tags: ["都市", "逆袭", "热血"],
     },
     {
-      id: 8,
+      id: 14,
       title: "龙王出狱",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -151,7 +152,7 @@ const bookList = {
       tags: ["都市", "逆袭", "热血"],
     },
     {
-      id: 7,
+      id: 15,
       title: "诸神愚戏",
       cover: "/books/novel/default.jpg",
       progress: 0,
@@ -161,7 +162,7 @@ const bookList = {
       tags: ["玄幻", "奇幻冒险", "成长"],
     },
     {
-      id: 8,
+      id: 16,
       title: "斗破苍穹",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -171,7 +172,7 @@ const bookList = {
       tags: ["玄幻", "热血", "成长逆袭"],
     },
     {
-      id: 9,
+      id: 17,
       title: "斗罗大陆",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -181,7 +182,7 @@ const bookList = {
       tags: ["玄幻", "武魂", "成长冒险"],
     },
     {
-      id: 10,
+      id: 18,
       title: "完美世界",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -191,7 +192,7 @@ const bookList = {
       tags: ["玄幻", "修炼", "热血争霸"],
     },
     {
-      id: 11,
+      id: 19,
       title: "遮天",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -201,7 +202,7 @@ const bookList = {
       tags: ["仙侠", "玄幻", "热血冒险"],
     },
     {
-      id: 12,
+      id: 20,
       title: "圣墟",
       cover: "/books/novel/default.jpg",
       progress: 100,
@@ -211,7 +212,7 @@ const bookList = {
       tags: ["玄幻", "末世", "热血修炼"],
     },
     {
-      id: 13,
+      id: 21,
       title: "牧神记",
       cover: "/books/novel/default.jpg",
       progress: 100,
