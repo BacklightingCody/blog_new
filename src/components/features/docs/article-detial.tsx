@@ -3,6 +3,7 @@ import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, User, Clock, MessageCircle } from "lucide-react"
+import type { ArticleDetailData } from '@mock/docs/detail'
 
 interface Author {
   name: string
@@ -24,13 +25,13 @@ interface ArticleDetailProps {
 export function ArticleDetail({
   title,
   author,
-  publishDate,
+  createdAt,
   readTime,
   category,
   tags,
   summary,
   content,
-}: ArticleDetailProps) {
+}: ArticleDetailData) {
   const formatContent = (content: string) => {
     return content
       .split("\n\n")
@@ -83,7 +84,7 @@ export function ArticleDetail({
         <div className="flex items-center gap-6 text-sm text-gray-600">
           <div className="flex items-center gap-1">
             <Calendar className="h-4 w-4" />
-            <span>{publishDate}</span>
+            <span>{createdAt}</span>
           </div>
           <div className="flex items-center gap-1">
             <Clock className="h-4 w-4" />

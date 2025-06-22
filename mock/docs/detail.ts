@@ -1,14 +1,41 @@
 import { generateId } from "../utils"
 
-export const article = {
+export interface ArticleDetailData {
+  id: string
+  slug: string
+  title: string
+  author: {
+    id: string
+    name: string
+    avatar: string
+    bio: string
+  }
+  coverImage: string
+  createdAt: string
+  updatedAt: string
+  readTime: string
+  category: string
+  tags: string[]
+  summary: string
+  content: string
+  likes: number
+  bookmarks: number
+  comments: number
+}
+
+export const article:ArticleDetailData = {
   id: generateId().toString(),
+  slug: "react-18-concurrent-rendering",
   title: "深入理解 React 18 的并发特性：Suspense 和 Concurrent Rendering",
   author: {
+    id: "user_123",
     name: "张三",
     avatar: "/placeholder.svg?height=40&width=40",
     bio: "前端架构师，专注于 React 生态系统",
   },
-  publishDate: "2024年1月15日",
+  coverImage: "/cover/react-concurrency.png",
+  createdAt: "2024-01-15",
+  updatedAt: "2024-01-15",
   readTime: "8分钟阅读",
   category: "前端开发",
   tags: ["React", "JavaScript", "前端"],
@@ -111,4 +138,11 @@ React 18 的并发特性为我们提供了强大的工具来构建更好的用�
   likes: 128,
   bookmarks: 45,
   comments: 23,
+}
+
+export async function mockArticle() {
+
+  await new Promise(resolve => setTimeout(resolve, 100)); 
+
+  return article
 }

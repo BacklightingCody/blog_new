@@ -20,7 +20,7 @@ const Header = () => {
 
   const { containerRef, glowRef } = useMouseGlow();
   return (
-    <header className={clsx('z-100 sticky top-0 py-4 flex justify-around items-center w-full z-10 p-[16%]  h-16  transform translate-z-0 backdrop-saturate-180 backdrop-blur', y > threshold && styles.shadow)}>
+    <header className={clsx('z-100 sticky top-0 py-4 flex justify-around items-center w-full p-[16%]  h-16  transform translate-z-0 backdrop-saturate-180 backdrop-blur', y > threshold && styles.shadow)}>
       <div className={clsx('fixed left-0 ')}>
         <Signature width={180} className=''></Signature>
       </div>

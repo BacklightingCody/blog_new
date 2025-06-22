@@ -9,7 +9,7 @@ export default function UserSync() {
   const { isLoaded, user } = useUser();
 
   const res = useClerkInfo();
-  console.log('useClerkInfo', res);
+  // console.log('useClerkInfo', res);
   useEffect(() => {
     if (!isLoaded || !user) return;
 

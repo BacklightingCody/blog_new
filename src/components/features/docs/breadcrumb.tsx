@@ -1,5 +1,4 @@
-"use client"
-
+'use client'
 import Link from "next/link"
 import { Home } from "lucide-react"
 import {
@@ -12,14 +11,14 @@ import {
 } from "@/components/ui/breadcrumb"
 import React from "react"
 
-interface BreadcrumbItem {
+interface BreadcrumbItemType {
   label: string
   href?: string
   icon?: React.ReactNode
 }
 
 interface BreadcrumbNavProps {
-  items: BreadcrumbItem[]
+  items: BreadcrumbItemType[]
   className?: string
 }
 
@@ -28,7 +27,7 @@ export default function BreadcrumbNav({ items, className = "" }: BreadcrumbNavPr
     <Breadcrumb className={`mb-8 ${className}`}>
       <BreadcrumbList>
         {items.map((item, index) => (
-          <React.Fragment key={item.label}>
+          <React.Fragment key={item.href ?? item.label + '-' + index}>
             <BreadcrumbItem>
               {item.href ? (
                 <BreadcrumbLink href={item.href} className="flex items-center gap-1">
@@ -45,4 +44,4 @@ export default function BreadcrumbNav({ items, className = "" }: BreadcrumbNavPr
       </BreadcrumbList>
     </Breadcrumb>
   )
-} 
+}

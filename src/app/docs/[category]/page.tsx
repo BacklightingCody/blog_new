@@ -1,12 +1,12 @@
-import type { Metadata } from "next"
+
 import BlogTimeline from "@/components/features/docs/blog-timeline"
 import BreadcrumbNav from "@/components/features/docs/breadcrumb"
 import { Home } from "lucide-react"
 import { categoryNameMap } from "@/constants/index"
 
 
-export async function generateMetadata({ params }: { params: { category: string } }) {
-  const category = params.category
+export async function generateMetadata({ params }: { params: Promise<{ category: string }> }) {
+  const {category} = await params
   const pageTitle = categoryNameMap[category as keyof typeof categoryNameMap] || category
   return {
     title: `${pageTitle} 文档 - 我的网站`,
@@ -14,8 +14,8 @@ export async function generateMetadata({ params }: { params: { category: string 
   }
 }
 
-export default function CategoryDocPage({ params }: { params: { category: string } }) {
-  const category = params.category
+export default async function CategoryDocPage({ params }: { params: Promise<{ category: string }> }) {
+  const {category} = await params
   const categoryName = categoryNameMap[category as keyof typeof categoryNameMap] || category
 
   const breadcrumbItems = [

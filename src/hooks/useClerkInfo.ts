@@ -21,16 +21,16 @@ export function useClerkInfo() {
   const { session } = useSession();
   const { sessions } = useSessionList();
   const { organization } = useOrganization();
-  const { organizationList } = useOrganizationList();
-  console.log('user', user);
-  console.log('session', session);
-  console.log('userLoaded', userLoaded);
-  console.log('organization', organization);
-  console.log('organizationList', organizationList);
-  console.log('sessions', sessions);
-  console.log('isSignedIn', isSignedIn);
-  console.log('signIn', signIn);
-  console.log('signUp', signUp);
+  // const { organizationList } = useOrganizationList();
+  // console.log('user', user);
+  // console.log('session', session);
+  // console.log('userLoaded', userLoaded);
+  // console.log('organization', organization);
+  // console.log('organizationList', organizationList);
+  // console.log('sessions', sessions);
+  // console.log('isSignedIn', isSignedIn);
+  // console.log('signIn', signIn);
+  // console.log('signUp', signUp);
   return {
     // User info
     user,
@@ -55,6 +55,6 @@ export function useClerkInfo() {
 
     // Organizations
     organization,
-    organizationList,
+    // organizationList,
   };
 }
