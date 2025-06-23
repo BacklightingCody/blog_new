@@ -32,7 +32,36 @@ module.exports = {
         'theme-card': 'var(--card-shadow)',
         card: 'var(--card-shadow)',
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            table: {
+              width: '100%',
+              'border-collapse': 'collapse',
+            },
+            th: {
+              'background-color': '#000', // Tailwind gray-100
+              padding: '0.5rem',
+              'text-align': 'left',
+            },
+            td: {
+              padding: '0.5rem',
+            },
+            pre: {
+              backgroundColor: '#f3f4f6',
+              padding: '1rem',
+              borderRadius: '0.5rem',
+            },
+            code: {
+              fontSize: '0.875rem',
+              backgroundColor: '#f3f4f6',
+              padding: '0.2rem 0.4rem',
+              borderRadius: '0.25rem',
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 } 

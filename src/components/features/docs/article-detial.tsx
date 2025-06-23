@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, User, Clock, MessageCircle } from "lucide-react"
 import type { ArticleDetailData } from '@mock/docs/detail'
-
+import MarkdownRender from '@/components/features/docs/markdown-render'
 interface Author {
   name: string
   avatar?: string
@@ -14,7 +14,7 @@ interface Author {
 interface ArticleDetailProps {
   title: string
   author: Author
-  publishDate: string
+  createAt: string
   readTime: string
   category: string
   tags: string[]
@@ -32,24 +32,6 @@ export function ArticleDetail({
   summary,
   content,
 }: ArticleDetailData) {
-  const formatContent = (content: string) => {
-    return content
-      .split("\n\n")
-      .map((paragraph) => {
-        if (paragraph.startsWith("## ")) {
-          return `<h2 class="text-2xl font-bold mt-8 mb-4 text-gray-900">${paragraph.slice(3)}</h2>`
-        } else if (paragraph.startsWith("### ")) {
-          return `<h3 class="text-xl font-semibold mt-6 mb-3 text-gray-900">${paragraph.slice(4)}</h3>`
-        } else if (paragraph.startsWith("```")) {
-          return `<pre class="bg-gray-100 rounded-lg p-4 overflow-x-auto my-4"><code class="text-sm">${paragraph.slice(3, -3)}</code></pre>`
-        } else if (paragraph.match(/^\d+\./)) {
-          return `<p class="mb-4 pl-4">${paragraph}</p>`
-        } else {
-          return `<p class="mb-4">${paragraph}</p>`
-        }
-      })
-      .join("")
-  }
 
   return (
     <article className="rounded-lg">
@@ -115,16 +97,7 @@ export function ArticleDetail({
       {/* 文章主体 */}
       <div className="px-8 pb-8">
         <div className="prose prose-lg max-w-none">
-          <div
-            className="text-gray-800 leading-relaxed"
-            style={{
-              lineHeight: "1.8",
-              fontSize: "16px",
-            }}
-            dangerouslySetInnerHTML={{
-              __html: formatContent(content),
-            }}
-          />
+          <MarkdownRender content={content} />
         </div>
       </div>
     </article>

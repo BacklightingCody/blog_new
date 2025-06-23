@@ -42,9 +42,17 @@ export const article:ArticleDetailData = {
   summary:
     "本文深入探讨了 React 18 引入的并发特性，包括 Suspense 组件的工作原理、Concurrent Rendering 的实现机制，以及这些特性如何提升用户体验。我们将通过实际代码示例来演示如何在项目中有效利用这些新特性。",
   content: `
+  ## 目录\n<!-- toc -->
 React 18 带来了许多令人兴奋的新特性，其中最重要的就是并发特性（Concurrent Features）。这些特性不仅改变了 React 的渲染方式，也为开发者提供了更好的用户体验控制能力。
 
 ## 什么是并发渲染？
+
+![图片alt](/avatar.jpg)
+
+| Syntax      | Description | Test Text     |
+| :---        |    :----:   |          ---: |
+| Header      | Title       | Here's this   |
+| Paragraph   | Text        | And more      |
 
 并发渲染（Concurrent Rendering）是 React 18 的核心特性之一。它允许 React 在渲染过程中暂停、恢复或放弃工作，从而保持应用的响应性。
 
