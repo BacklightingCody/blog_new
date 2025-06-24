@@ -48,21 +48,21 @@ export function CommentSection({ comments, onAddComment, onLikeComment }: Commen
               </Avatar>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium text-gray-900">{comment.author}</span>
+                  <span className="font-medium">{comment.author}</span>
                   <span className="text-sm text-gray-500">{comment.time}</span>
                 </div>
-                <p className="text-gray-800 mb-3 leading-relaxed">{comment.content}</p>
+                <p className="mb-3 leading-relaxed">{comment.content}</p>
                 <div className="flex items-center gap-4">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="gap-1 text-gray-600 hover:text-gray-900"
+                    className="gap-1 hover:cursor-pointer"
                     onClick={() => onLikeComment?.(comment.id)}
                   >
                     <ThumbsUp className="h-3 w-3" />
                     {comment.likes}
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                  <Button variant="ghost" size="sm" className="hover:cursor-pointer">
                     回复
                   </Button>
                 </div>

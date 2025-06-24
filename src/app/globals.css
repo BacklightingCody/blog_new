@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+/* @plugin "@tailwindcss/typography"; */
 
 /* 确保暗色模式选择器能正确工作 */
 @custom-variant dark (&:is(.dark *), &:is(html.dark *), &:is(body.dark *));

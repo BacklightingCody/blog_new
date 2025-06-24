@@ -46,13 +46,21 @@ export const article:ArticleDetailData = {
 React 18 带来了许多令人兴奋的新特性，其中最重要的就是并发特性（Concurrent Features）。这些特性不仅改变了 React 的渲染方式，也为开发者提供了更好的用户体验控制能力。
 
 ## 什么是并发渲染？
-
 ![图片alt](/avatar.jpg)
 
 | Syntax      | Description | Test Text     |
 | :---        |    :----:   |          ---: |
 | Header      | Title       | Here's this   |
 | Paragraph   | Text        | And more      |
+
+- First item
+  1. First item
+  2. Second item
+  3. Third item
+  4. Fourth item
+- Second item
+- Third item
+- Fourth item
 
 并发渲染（Concurrent Rendering）是 React 18 的核心特性之一。它允许 React 在渲染过程中暂停、恢复或放弃工作，从而保持应用的响应性。
 
