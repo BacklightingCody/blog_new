@@ -62,7 +62,7 @@ const Nav = () => {
             <Link
               key={item.path}
               href={item.path}
-              className="relative px-4 py-2 group text-theme-primary"
+              className="relative px-4 py-2 group text-theme-primary font-semibold mix-blend-difference"
               ref={getItemRef(item.path)}
             >
               {displayNames[item.path] || item.name}
@@ -95,7 +95,7 @@ const Nav = () => {
         <Link
           key={item.path}
           href={item.path}
-          className="relative px-4 py-2 group text-theme-primary"
+          className="relative px-4 py-2 group text-theme-primary font-semibold mix-blend-difference"
           ref={getItemRef(item.path)}
         >
           <span className="relative z-10">{item.name}</span>
