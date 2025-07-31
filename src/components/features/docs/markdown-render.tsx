@@ -2,15 +2,11 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkToc from 'remark-toc';
-import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
-import { useEffect } from 'react';
-// import '/atom-one-dark.css'
-// import 'highlight.js/styles/gradient-dark.css';
-// import 'highlight.js/styles/gradient-light.css';
-import 'highlight.js/styles/tokyo-night-dark.css'
 import { useThemeStore, themes } from '@/zustand/themeStore';
 import { useTheme } from "next-themes"
+import { CodeBlock, InlineCode } from './code-block';
+import { MediaImage, MediaVideo, MediaGif } from './media-content';
 type MarkdownRenderProps = {
   content?: string;
   html?: string;
@@ -45,7 +41,7 @@ export default function MarkdownRender({ content, html, className }: MarkdownRen
     <article className={`prose prose-lg ${className ?? ''}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, [remarkToc, { heading: '目录', maxDepth: 3 }]]}
-        rehypePlugins={[rehypeSlug, rehypeHighlight]}
+        rehypePlugins={[rehypeSlug]}
         components={{
           h1: ({ node, ...props }) => (
             <h1 {...props} className="text-4xl font-bold text-theme-primary mt-10 mb-6" />
@@ -88,15 +84,22 @@ export default function MarkdownRender({ content, html, className }: MarkdownRen
           li: ({ node, ...props }) => (
             <li {...props} className={`${baseText}`} />
           ),
-          code: ({ node, className: language, children, ...props }) => {
-            const base = 'font-mono rounded px-5 py-4';
+          code: ({ node, className, children, inline, ...props }) => {
+            const match = /language-(\w+)/.exec(className || '');
+            const language = match ? match[1] : '';
+
+            if (inline) {
+              return <InlineCode {...props}>{String(children).replace(/\n$/, '')}</InlineCode>;
+            }
 
             return (
-              <pre className="overflow-x-auto my-4 rounded bg-muted text-sm border border-theme-accent">
-                <code {...props} className={`${base} block text-left`}>
-                  {children}
-                </code>
-              </pre>
+              <CodeBlock
+                className={className}
+                language={language}
+                {...props}
+              >
+                {String(children).replace(/\n$/, '')}
+              </CodeBlock>
             );
           },
           table: ({ node, ...props }) => (
@@ -111,14 +114,87 @@ export default function MarkdownRender({ content, html, className }: MarkdownRen
           td: ({ node, ...props }) => (
             <td {...props} className="border border-theme-accent px-4 py-2" />
           ),
-          img: ({ node, ...props }) => (
-            <img
-              {...props}
-              className="rounded-lg mx-auto my-4 max-h-[400px] shadow-md"
-              alt={props.alt || ''}
-            />
-          ),
+          img: ({ node, src, alt, title, ...props }) => {
+            if (!src) return null;
+
+            // 检测文件类型
+            const isGif = src.toLowerCase().endsWith('.gif');
+            const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(src);
+
+            // 解析标题中的参数 (例如: "图片标题 | width=500 | height=300")
+            const parts = title?.split('|') || [];
+            const caption = parts[0]?.trim();
+            const params: Record<string, any> = {};
+
+            parts.slice(1).forEach(part => {
+              const [key, value] = part.split('=').map(s => s.trim());
+              if (key && value) {
+                params[key] = isNaN(Number(value)) ? value : Number(value);
+              }
+            });
+
+            if (isVideo) {
+              return (
+                <MediaVideo
+                  src={src}
+                  caption={caption || alt}
+                  width={params.width}
+                  height={params.height}
+                  autoplay={params.autoplay === 'true'}
+                  loop={params.loop === 'true'}
+                  muted={params.muted === 'true'}
+                  controls={params.controls !== 'false'}
+                  {...props}
+                />
+              );
+            }
+
+            if (isGif) {
+              return (
+                <MediaGif
+                  src={src}
+                  alt={alt || ''}
+                  caption={caption}
+                  width={params.width}
+                  height={params.height}
+                  autoplay={params.autoplay !== 'false'}
+                  {...props}
+                />
+              );
+            }
+
+            return (
+              <MediaImage
+                src={src}
+                alt={alt || ''}
+                caption={caption}
+                width={params.width}
+                height={params.height}
+                {...props}
+              />
+            );
+          },
           hr: () => <hr className="my-8 border-t border-border-color" />,
+
+          // 自定义视频标签支持
+          video: ({ node, src, poster, ...props }) => {
+            if (!src) return null;
+
+            return (
+              <MediaVideo
+                src={src}
+                poster={poster}
+                caption={props.title}
+                width={props.width}
+                height={props.height}
+                autoplay={props.autoPlay}
+                loop={props.loop}
+                muted={props.muted}
+                controls={props.controls !== false}
+                {...props}
+              />
+            );
+          },
         }
         }
       >

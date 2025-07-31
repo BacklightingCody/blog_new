@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Article } from "@mock/docs/types"
+import type { Article } from "@/types/article"
 
 interface ArticleLinkProps {
   article: Article
@@ -11,10 +11,10 @@ interface ArticleLinkProps {
 
 export function ArticleLink({ article, className = "", children }: ArticleLinkProps) {
   const href = `/docs/${article.category}/${article.slug}`
-  
+
   return (
     <Link href={href} className={className}>
       {children}
     </Link>
   )
-} 
+}
