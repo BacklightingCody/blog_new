@@ -2,14 +2,16 @@
 
 import { useState, useRef, useEffect } from "react"
 import { motion, useAnimation, useInView } from "framer-motion"
-import { Clock, Eye, MessageSquare, ThumbsUp, Tag, User } from "lucide-react"
+import { Clock, Eye, MessageSquare, ThumbsUp, Tag, User, Share2 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ArticlesApi } from "@/lib/api/articles"
-import type { Article, ArticleQueryParams } from "@/types/article"
+import { mockArticles } from "@/mock/docs"
+import type { Article } from "@/types/article"
 import { formatArticleDate, formatReadTime, getAuthorDisplayName } from "@/utils/article-transform"
 import TimeStats from './time-stats'
 import { ArticleLink } from "./article-link"
+import { ShareDialog } from "./share-dialog"
 
 interface BlogListProps {
   category?: string;
@@ -25,7 +27,15 @@ export default function BlogList({ category, limit, showPagination = true }: Blo
   const [hasMore, setHasMore] = useState(true)
   const [total, setTotal] = useState(0)
   const observerRef = useRef<HTMLDivElement>(null)
+  const [isMainDocs, setIsMainDocs] = useState(window.location.pathname === '/docs');
 
+  useEffect(() => {
+    let url = false
+    if (window.location.pathname === '/docs') {
+      url = true;
+    }
+    setIsMainDocs(url);
+  }, [])
   // 加载文章
   const loadArticles = async (pageNum: number = 1, append: boolean = false) => {
     if (loading) return
@@ -34,38 +44,31 @@ export default function BlogList({ category, limit, showPagination = true }: Blo
     setError(null)
 
     try {
-      const params: ArticleQueryParams = {
-        page: pageNum,
-        limit: limit || 10,
-        isPublished: true,
-        isDraft: false,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-      }
+      // 使用mock数据
+      let filteredArticles = mockArticles
 
+      // 按分类过滤
       if (category) {
-        params.category = category
+        filteredArticles = mockArticles.filter(article => article.category === category)
       }
 
-      const response = await ArticlesApi.getArticles(params)
+      // 分页处理
+      const pageSize = limit || 10
+      const startIndex = (pageNum - 1) * pageSize
+      const endIndex = startIndex + pageSize
+      const newArticles = filteredArticles.slice(startIndex, endIndex)
 
-      if (response.success && response.data) {
-        const { data: newArticles, pagination } = response.data
-
-        if (append) {
-          setArticles(prev => [...prev, ...newArticles])
-        } else {
-          setArticles(newArticles)
-        }
-
-        setHasMore(pagination.hasNext)
-        setTotal(pagination.total)
-        setPage(pageNum)
+      if (append) {
+        setArticles(prev => [...(prev || []), ...newArticles])
       } else {
-        setError(response.error || '加载文章失败')
+        setArticles(newArticles)
       }
+
+      setHasMore(endIndex < filteredArticles.length)
+      setTotal(filteredArticles.length)
+      setPage(pageNum)
     } catch (err) {
-      setError('网络错误，请稍后重试')
+      setError('加载文章失败')
       console.error('Failed to load articles:', err)
     } finally {
       setLoading(false)
@@ -111,7 +114,7 @@ export default function BlogList({ category, limit, showPagination = true }: Blo
   if (error) {
     return (
       <div className="space-y-4">
-        <TimeStats />
+        {isMainDocs && <TimeStats />}
         <div className="text-center py-8">
           <p className="text-red-500 mb-4">{error}</p>
           <button
@@ -167,6 +170,7 @@ function ArticleItem({ article }: { article: Article }) {
   const isInView = useInView(ref, { once: true })
   const controls = useAnimation()
   const [isHovered, setIsHovered] = useState(false)
+  const [showShareDialog, setShowShareDialog] = useState(false)
 
   useEffect(() => {
     if (isInView) {
@@ -272,24 +276,47 @@ function ArticleItem({ article }: { article: Article }) {
           ))}
         </div>
 
-        {/* 统计信息 */}
-        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-          <div className="flex items-center">
-            <Eye className="mr-1 h-4 w-4" />
-            <span>{article.viewCount}</span>
+        {/* 统计信息和操作按钮 */}
+        <div className="flex items-center justify-between">
+          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center">
+              <Eye className="mr-1 h-4 w-4" />
+              <span>{article.viewCount}</span>
+            </div>
+
+            <div className="flex items-center">
+              <ThumbsUp className="mr-1 h-4 w-4" />
+              <span>{article.likes}</span>
+            </div>
+
+            <div className="flex items-center">
+              <MessageSquare className="mr-1 h-4 w-4" />
+              <span>{article.comments}</span>
+            </div>
           </div>
 
-          <div className="flex items-center">
-            <ThumbsUp className="mr-1 h-4 w-4" />
-            <span>{article.likes}</span>
-          </div>
-
-          <div className="flex items-center">
-            <MessageSquare className="mr-1 h-4 w-4" />
-            <span>{article.comments}</span>
-          </div>
+          {/* 快速分享按钮 */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowShareDialog(true);
+            }}
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <Share2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
+
+      {/* 分享对话框 */}
+      {showShareDialog && (
+        <ShareDialog 
+          article={article} 
+          onClose={() => setShowShareDialog(false)} 
+        />
+      )}
     </motion.div>
   )
 }

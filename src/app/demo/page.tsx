@@ -1,10 +1,10 @@
 "use client"
 
-import { PreviewCard } from "@/components/features/card/preview-card"
-import { CustomCardContent } from "@/components/features/card/card-content"
-import { demos } from '@mock/demo'
-import useCoverImage from '@/hooks/useCoverImage';
-import { DEFAULT_COVER_IMAGE_NAMES } from '@/constants/default_cover';
+import { PreviewCard } from "@/components/features/card/PreviewCard"
+import { CustomCardContent } from "@/components/features/card/CardContent"
+import { demos, type DemoItem } from '@/mock/demo'
+import { useCoverImage } from '@/hooks/useCoverImage';
+import { DEFAULT_COVER_IMAGE_NAMES } from '@/constants/defaultCover';
 import { useMemo, useState, useEffect } from 'react';
 import Image from 'next/image';
 
@@ -43,7 +43,7 @@ export default function DemoPage() {
   });
 
   const { uniqueTagsCount, uniqueTags } = useMemo(() => {
-    const tags = Array.from(new Set(demos.flatMap((d) => d.tags || [])));
+    const tags = Array.from(new Set(demos.flatMap((d: DemoItem) => d.tags || [])));
     return {
       uniqueTagsCount: tags.length,
       uniqueTags: tags
@@ -51,13 +51,13 @@ export default function DemoPage() {
   }, []);
 
   // 分批加载数据
-  const [visibleDemos, setVisibleDemos] = useState(demos.slice(0, 6));
+  const [visibleDemos, setVisibleDemos] = useState<DemoItem[]>(demos.slice(0, 6));
   const [hasMore, setHasMore] = useState(demos.length > 6);
 
   const loadMore = () => {
     const currentLength = visibleDemos.length;
     const nextBatch = demos.slice(currentLength, currentLength + 6);
-    setVisibleDemos(prev => [...prev, ...nextBatch]);
+    setVisibleDemos((prev: DemoItem[]) => [...prev, ...nextBatch]);
     setHasMore(currentLength + 6 < demos.length);
   };
 
@@ -85,10 +85,10 @@ export default function DemoPage() {
 
       {/* Tags */}
       <div className="flex flex-wrap justify-center gap-2 mb-12">
-        {uniqueTags.map((tag) => (
+        {uniqueTags.map((tag: string) => (
           <span
             key={tag}
-            className="px-3 py-1 bg-theme-accent rounded-full text-sm hover:bg-theme-primary transition-colors cursor-pointer"
+            className="px-3 py-1 bg-secondary rounded-full text-sm hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
           >
             {tag}
           </span>
@@ -97,7 +97,7 @@ export default function DemoPage() {
 
       {/* Demo Grid */}
       <div id="demo-grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {isVisible && visibleDemos.map((demo) => (
+        {isVisible && visibleDemos.map((demo: DemoItem) => (
           <PreviewCard
             key={demo.id}
             coverImage={demo.coverImage || randomCoverImage}
@@ -110,7 +110,7 @@ export default function DemoPage() {
               title={demo.title} 
               description={demo.description} 
               date={demo.date} 
-              tags={demo.tags} 
+              tags={demo.tags || []} 
             />
           </PreviewCard>
         ))}
@@ -121,7 +121,7 @@ export default function DemoPage() {
         <div className="text-center mt-12">
           <button 
             onClick={loadMore}
-            className="px-6 py-3 bg-theme-primary hover:bg-theme-accnt rounded-lg transition-colors text-sm font-medium"
+            className="px-6 py-3 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors text-sm font-medium"
           >
             加载更多 Demo
           </button>

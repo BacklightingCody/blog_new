@@ -4,10 +4,13 @@ import { useState, useMemo, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
-import { ArticlesApi } from "@/lib/api/articles"
-import type { Article, ArticleQueryParams } from "@/types/article"
+import { Share2 } from "lucide-react"
+import { mockArticles } from "@/mock/docs"
+import type { Article } from "@/types/article"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { ArticleLink } from "./article-link"
+import { ShareDialog } from "./share-dialog"
 
 interface BlogTimelineProps {
   category: string
@@ -19,6 +22,7 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [shareArticle, setShareArticle] = useState<Article | null>(null)
 
   // 加载文章数据
   const loadArticles = async () => {
@@ -26,24 +30,17 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
     setError(null)
 
     try {
-      const params: ArticleQueryParams = {
-        category,
-        isPublished: true,
-        isDraft: false,
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-        limit: 100, // 获取所有文章用于时间线展示
-      }
+      // 使用mock数据，按分类过滤
+      const filteredArticles = mockArticles.filter(article => article.category === category)
+      
+      // 按创建时间降序排序
+      const sortedArticles = filteredArticles.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
 
-      const response = await ArticlesApi.getArticles(params)
-
-      if (response.success && response.data) {
-        setArticles(response.data.data)
-      } else {
-        setError(response.error || '加载文章失败')
-      }
+      setArticles(sortedArticles)
     } catch (err) {
-      setError('网络错误，请稍后重试')
+      setError('加载文章失败')
       console.error('Failed to load articles:', err)
     } finally {
       setLoading(false)
@@ -190,7 +187,20 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
                         )}
                       </div>
                     </h3>
-                    <time className="text-sm text-muted-foreground">{formatDate(article.createdAt)}</time>
+                    <div className="flex items-center gap-2">
+                      <time className="text-sm text-muted-foreground">{formatDate(article.createdAt)}</time>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShareArticle(article);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </motion.li>
@@ -198,6 +208,14 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
           </ul>
         </AnimatePresence>
       </div>
+
+      {/* 分享对话框 */}
+      {shareArticle && (
+        <ShareDialog 
+          article={shareArticle} 
+          onClose={() => setShareArticle(null)} 
+        />
+      )}
     </div>
   )
 }

@@ -27,7 +27,7 @@ export default async function CategoryDocPage({ params }: { params: Promise<{ ca
   ]
 
   return (
-    <div className="mx-auto w-[70%] py-12">
+    <div className="mx-auto w-[90%] py-12">
       <BreadcrumbNav items={breadcrumbItems} />
 
       <div className="mt-8">

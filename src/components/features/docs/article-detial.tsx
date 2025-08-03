@@ -16,7 +16,7 @@ export function ArticleDetail({ article }: ArticleDetailProps) {
   return (
     <article className="rounded-lg">
       {/* 文章头部 */}
-      <header className="p-8 pb-6">
+      <header className="pb-6">
         {/* 封面图片 */}
         {article.coverImage && (
           <div className="mb-6 rounded-lg overflow-hidden">
