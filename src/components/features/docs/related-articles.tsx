@@ -1,11 +1,4 @@
-/**
- * 相关文章推荐组件
- * 基于分类和标签推荐相关文章
- */
-
 'use client';
-
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Eye, ThumbsUp, ArrowRight, Sparkles } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ArticleLink } from './article-link';
 import type { Article } from '@/types/article';
-import { mockArticles } from '@/mock/docs';
+import { useEffect, useState } from 'react';
 import { formatArticleDate, formatReadTime } from '@/utils/article-transform';
 import { categoryColorMap } from '@/constants/index';
 
@@ -23,63 +16,38 @@ interface RelatedArticlesProps {
 }
 
 export function RelatedArticles({ currentArticle, maxCount = 4 }: RelatedArticlesProps) {
-  const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [relatedArticles, setRelatedArticles] = useState<Article[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 模拟加载相关文章
-    const loadRelatedArticles = async () => {
-      setLoading(true);
-      
-      // 模拟API延迟
-      await new Promise(resolve => setTimeout(resolve, 500));
+    const load = async () => {
+      setLoading(true)
+      try {
+        // NOTE: 暂时使用 mock 数据，保留请求代码以便后续切换
+        // const res = await fetch(`/api/articles?${new URLSearchParams({ limit: '50', category: currentArticle.category }).toString()}`)
+        // const json = await res.json()
+        // const list: Article[] = (json?.data?.data || [])
 
-      // 获取相关文章的逻辑
-      const currentTags = currentArticle.articleTags.map(tag => tag.tag.name);
-      
-      const related = mockArticles
-        .filter(article => {
-          // 排除当前文章
-          if (article.id === currentArticle.id) return false;
-          
-          // 优先推荐同分类文章
-          if (article.category === currentArticle.category) return true;
-          
-          // 推荐有相同标签的文章
-          const articleTags = article.articleTags.map(tag => tag.tag.name);
-          return articleTags.some(tag => currentTags.includes(tag));
-        })
-        .sort((a, b) => {
-          // 按相关度排序
-          const aTagMatches = a.articleTags.filter(tag => 
-            currentTags.includes(tag.tag.name)
-          ).length;
-          const bTagMatches = b.articleTags.filter(tag => 
-            currentTags.includes(tag.tag.name)
-          ).length;
-          
-          // 同分类的文章优先级更高
-          const aCategoryMatch = a.category === currentArticle.category ? 10 : 0;
-          const bCategoryMatch = b.category === currentArticle.category ? 10 : 0;
-          
-          const aScore = aCategoryMatch + aTagMatches;
-          const bScore = bCategoryMatch + bTagMatches;
-          
-          if (aScore !== bScore) {
-            return bScore - aScore;
-          }
-          
-          // 如果相关度相同，按阅读量排序
-          return b.viewCount - a.viewCount;
-        })
-        .slice(0, maxCount);
-
-      setRelatedArticles(related);
-      setLoading(false);
-    };
-
-    loadRelatedArticles();
-  }, [currentArticle, maxCount]);
+        const { mockArticles } = await import('@/mock/docs')
+        const list: Article[] = (mockArticles as unknown as Article[]).filter(a => a.id !== currentArticle.id && a.category === currentArticle.category)
+        const currentTags = new Set(currentArticle.articleTags.map(t => t.tag.name))
+        const scored = list
+          .map((a) => {
+            const matches = a.articleTags.reduce((acc, t) => acc + (currentTags.has(t.tag.name) ? 1 : 0), 0)
+            const categoryScore = a.category === currentArticle.category ? 10 : 0
+            const score = categoryScore + matches
+            return { a, score }
+          })
+          .sort((x, y) => y.score - x.score || y.a.viewCount - x.a.viewCount)
+          .slice(0, maxCount)
+          .map(x => x.a)
+        setRelatedArticles(scored)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [currentArticle, maxCount])
 
   if (loading) {
     return (

@@ -6,8 +6,8 @@ import { Clock, Eye, MessageSquare, ThumbsUp, Tag, User, Share2 } from "lucide-r
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { mockArticles } from "@/mock/docs"
 import type { Article } from "@/types/article"
+import { mockArticles } from "@/mock/docs"
 import { formatArticleDate, formatReadTime, getAuthorDisplayName } from "@/utils/article-transform"
 import TimeStats from './time-stats'
 import { ArticleLink } from "./article-link"
@@ -44,26 +44,28 @@ export default function BlogList({ category, limit, showPagination = true }: Blo
     setError(null)
 
     try {
-      // 使用mock数据
-      let filteredArticles = mockArticles
+      // NOTE: 暂时使用 mock 数据，保留请求代码以便后续切换
+      // const res = await fetch(`/api/articles?${new URLSearchParams({
+      //   page: String(pageNum),
+      //   limit: String(limit || 10),
+      //   ...(category ? { category } : {}),
+      // }).toString()}`)
+      // const json = await res.json()
+      // if (!json?.success) throw new Error(json?.error || '加载失败')
+      // const newArticles: Article[] = json.data?.data || []
+      // const pagination = json.data?.pagination || { total: 0, totalPages: 1 }
 
-      // 按分类过滤
+      // 使用 mock 数据
+      let filteredArticles = mockArticles as unknown as Article[]
       if (category) {
-        filteredArticles = mockArticles.filter(article => article.category === category)
+        filteredArticles = filteredArticles.filter(a => a.category === category)
       }
-
-      // 分页处理
       const pageSize = limit || 10
       const startIndex = (pageNum - 1) * pageSize
       const endIndex = startIndex + pageSize
-      const newArticles = filteredArticles.slice(startIndex, endIndex)
+      const pageItems = filteredArticles.slice(startIndex, endIndex)
 
-      if (append) {
-        setArticles(prev => [...(prev || []), ...newArticles])
-      } else {
-        setArticles(newArticles)
-      }
-
+      setArticles(prev => (append ? [...(prev || []), ...pageItems] : pageItems))
       setHasMore(endIndex < filteredArticles.length)
       setTotal(filteredArticles.length)
       setPage(pageNum)

@@ -48,62 +48,44 @@ interface CommentSectionProps {
   articleId: number;
 }
 
-// Mock评论数据
-const mockComments: Comment[] = [
-  {
-    id: 1,
-    content: '这篇文章写得很好，对我帮助很大！特别是关于实践部分的内容，让我对这个主题有了更深入的理解。',
-    author: {
-      id: 1,
-      name: '张三',
-      avatar: '/avatars/zhang.jpg',
-    },
-    createdAt: '2024-01-20T10:30:00Z',
-    likes: 12,
-    isLiked: false,
-    replies: [
-      {
-        id: 2,
-        content: '同感！作者的讲解很清晰。',
-        author: {
-          id: 2,
-          name: '李四',
-          avatar: '/avatars/li.jpg',
-        },
-        createdAt: '2024-01-20T11:15:00Z',
-        likes: 3,
-        isLiked: true,
-      }
-    ]
-  },
-  {
-    id: 3,
-    content: '有个小问题想请教一下，关于第三部分的实现方式，是否还有其他的解决方案？',
-    author: {
-      id: 3,
-      name: '王五',
-      avatar: '/avatars/wang.jpg',
-    },
-    createdAt: '2024-01-20T14:20:00Z',
-    likes: 5,
-    isLiked: false,
-  },
-  {
-    id: 4,
-    content: '感谢分享！已经收藏了，准备按照文章的步骤实践一下。',
-    author: {
-      id: 4,
-      name: '赵六',
-      avatar: '/avatars/zhao.jpg',
-    },
-    createdAt: '2024-01-20T16:45:00Z',
-    likes: 8,
-    isLiked: false,
-  }
-];
+import { fetchComments as apiFetchComments, postComment as apiPostComment, postReply as apiPostReply, likeComment as apiLikeComment } from '@/services/articles'
 
 export function CommentSection({ articleId }: CommentSectionProps) {
-  const [comments, setComments] = useState<Comment[]>(mockComments);
+  const [comments, setComments] = useState<Comment[]>([]);
+  useEffect(() => {
+    const load = async () => {
+      const res = await apiFetchComments(articleId)
+      if (res?.success) {
+        // 适配服务端评论结构到本地 Comment 接口
+        const mapped: Comment[] = (res.data || []).map((c: any) => ({
+          id: c.id,
+          content: c.content,
+          author: {
+            id: c.user.id,
+            name: c.user.firstName || c.user.username,
+            avatar: c.user.imageUrl,
+          },
+          createdAt: c.createdAt,
+          likes: c.likes || 0,
+          isLiked: false,
+          replies: (c.replies || []).map((r: any) => ({
+            id: r.id,
+            content: r.content,
+            author: {
+              id: r.user.id,
+              name: r.user.firstName || r.user.username,
+              avatar: r.user.imageUrl,
+            },
+            createdAt: r.createdAt,
+            likes: r.likes || 0,
+            isLiked: false,
+          }))
+        }))
+        setComments(mapped)
+      }
+    }
+    load()
+  }, [articleId])
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
@@ -114,26 +96,24 @@ export function CommentSection({ articleId }: CommentSectionProps) {
     if (!newComment.trim()) return;
 
     setIsSubmitting(true);
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const comment: Comment = {
-      id: Date.now(),
-      content: newComment,
-      author: {
-        id: 999,
-        name: '当前用户',
-        avatar: '/avatars/current-user.jpg',
-      },
-      createdAt: new Date().toISOString(),
-      likes: 0,
-      isLiked: false,
-    };
-
-    setComments(prev => [comment, ...prev]);
-    setNewComment('');
-    setIsSubmitting(false);
+    try {
+      const res = await apiPostComment(articleId, { content: newComment })
+      if (res?.success && res?.data) {
+        const c = res.data
+        const mapped: Comment = {
+          id: c.id,
+          content: c.content,
+          author: { id: c.user.id, name: c.user.firstName || c.user.username, avatar: c.user.imageUrl },
+          createdAt: c.createdAt,
+          likes: c.likes || 0,
+          isLiked: false,
+        }
+        setComments(prev => [mapped, ...prev])
+        setNewComment('')
+      }
+    } finally {
+      setIsSubmitting(false)
+    }
   };
 
   // 提交回复
@@ -141,64 +121,51 @@ export function CommentSection({ articleId }: CommentSectionProps) {
     if (!replyContent.trim()) return;
 
     setIsSubmitting(true);
-    
-    // 模拟API调用
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const reply: Comment = {
-      id: Date.now(),
-      content: replyContent,
-      author: {
-        id: 999,
-        name: '当前用户',
-        avatar: '/avatars/current-user.jpg',
-      },
-      createdAt: new Date().toISOString(),
-      likes: 0,
-      isLiked: false,
-    };
-
-    setComments(prev => prev.map(comment => {
-      if (comment.id === parentId) {
-        return {
-          ...comment,
-          replies: [...(comment.replies || []), reply]
-        };
+    try {
+      const res = await apiPostReply(articleId, parentId, { content: replyContent })
+      if (res?.success && res?.data) {
+        const r = res.data
+        const mapped: Comment = {
+          id: r.id,
+          content: r.content,
+          author: { id: r.user.id, name: r.user.firstName || r.user.username, avatar: r.user.imageUrl },
+          createdAt: r.createdAt,
+          likes: r.likes || 0,
+          isLiked: false,
+        }
+        setComments(prev => prev.map(comment => {
+          if (comment.id === parentId) {
+            return { ...comment, replies: [...(comment.replies || []), mapped] }
+          }
+          return comment
+        }))
+        setReplyContent('')
+        setReplyingTo(null)
       }
-      return comment;
-    }));
-
-    setReplyContent('');
-    setReplyingTo(null);
-    setIsSubmitting(false);
+    } finally {
+      setIsSubmitting(false)
+    }
   };
 
   // 点赞评论
-  const handleLikeComment = (commentId: number, isReply = false, parentId?: number) => {
+  const handleLikeComment = async (commentId: number, isReply = false, parentId?: number) => {
+    await apiLikeComment(articleId, commentId)
     setComments(prev => prev.map(comment => {
       if (isReply && comment.id === parentId) {
         return {
           ...comment,
           replies: comment.replies?.map(reply => {
             if (reply.id === commentId) {
-              return {
-                ...reply,
-                isLiked: !reply.isLiked,
-                likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1
-              };
+              return { ...reply, isLiked: !reply.isLiked, likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1 }
             }
-            return reply;
+            return reply
           })
-        };
+        }
       } else if (comment.id === commentId) {
-        return {
-          ...comment,
-          isLiked: !comment.isLiked,
-          likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
-        };
+        return { ...comment, isLiked: !comment.isLiked, likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1 }
       }
-      return comment;
-    }));
+      return comment
+    }))
   };
 
   return (

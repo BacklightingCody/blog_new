@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkToc from 'remark-toc';
 import rehypeSlug from 'rehype-slug';
-import { useThemeStore, themes } from '@/zustand/themeStore';
+import { useThemeStore, themes } from '@/zustand/stores/themeStore';
 import { useTheme } from "next-themes"
 import { CodeBlock, InlineCode } from './code-block';
 import { MediaImage, MediaVideo, MediaGif } from './media-content';
@@ -14,7 +14,6 @@ type MarkdownRenderProps = {
 };
 
 export default function MarkdownRender({ content, html, className }: MarkdownRenderProps) {
-  const { colorTheme, setColorTheme } = useThemeStore();
   const { theme } = useTheme()
   // 基本样式
   const baseText = 'text-base leading-relaxed text-text';
@@ -84,23 +83,24 @@ export default function MarkdownRender({ content, html, className }: MarkdownRen
           li: ({ node, ...props }) => (
             <li {...props} className={`${baseText}`} />
           ),
-          code: ({ node, className, children, inline, ...props }) => {
-            const match = /language-(\w+)/.exec(className || '');
-            const language = match ? match[1] : '';
+          code: (rawProps) => {
+            const { className, children, inline, ...props } = rawProps as any
+            const match = /language-(\w+)/.exec(className || '')
+            const language = match ? match[1] : ''
 
             if (inline) {
-              return <InlineCode {...props}>{String(children).replace(/\n$/, '')}</InlineCode>;
+              return <InlineCode {...(props as any)}>{String(children).replace(/\n$/, '')}</InlineCode>
             }
 
             return (
               <CodeBlock
                 className={className}
                 language={language}
-                {...props}
+                {...(props as any)}
               >
                 {String(children).replace(/\n$/, '')}
               </CodeBlock>
-            );
+            )
           },
           table: ({ node, ...props }) => (
             <div className="my-4 text-center">
@@ -114,15 +114,17 @@ export default function MarkdownRender({ content, html, className }: MarkdownRen
           td: ({ node, ...props }) => (
             <td {...props} className="border border-theme-accent px-4 py-2" />
           ),
-          img: ({ node, src, alt, title, ...props }) => {
-            if (!src) return null;
+          img: (rawProps) => {
+            const { node, src, alt, title, ...props } = rawProps as any
+            if (!src) return null
 
             // 检测文件类型
-            const isGif = src.toLowerCase().endsWith('.gif');
-            const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(src);
+            const srcStr = String(src)
+            const isGif = srcStr.toLowerCase().endsWith('.gif')
+            const isVideo = /\.(mp4|webm|ogg|mov)$/i.test(srcStr)
 
             // 解析标题中的参数 (例如: "图片标题 | width=500 | height=300")
-            const parts = title?.split('|') || [];
+            const parts = (title ? String(title) : '').split('|') || []
             const caption = parts[0]?.trim();
             const params: Record<string, any> = {};
 
@@ -136,15 +138,15 @@ export default function MarkdownRender({ content, html, className }: MarkdownRen
             if (isVideo) {
               return (
                 <MediaVideo
-                  src={src}
+                  src={srcStr}
                   caption={caption || alt}
-                  width={params.width}
-                  height={params.height}
+                  width={typeof params.width === 'number' ? params.width : undefined}
+                  height={typeof params.height === 'number' ? params.height : undefined}
                   autoplay={params.autoplay === 'true'}
                   loop={params.loop === 'true'}
                   muted={params.muted === 'true'}
                   controls={params.controls !== 'false'}
-                  {...props}
+                  {...(props as any)}
                 />
               );
             }
@@ -152,48 +154,49 @@ export default function MarkdownRender({ content, html, className }: MarkdownRen
             if (isGif) {
               return (
                 <MediaGif
-                  src={src}
+                  src={srcStr}
                   alt={alt || ''}
                   caption={caption}
-                  width={params.width}
-                  height={params.height}
+                  width={typeof params.width === 'number' ? params.width : undefined}
+                  height={typeof params.height === 'number' ? params.height : undefined}
                   autoplay={params.autoplay !== 'false'}
-                  {...props}
+                  {...(props as any)}
                 />
               );
             }
 
             return (
               <MediaImage
-                src={src}
+                src={srcStr}
                 alt={alt || ''}
                 caption={caption}
-                width={params.width}
-                height={params.height}
-                {...props}
+                width={typeof params.width === 'number' ? params.width : undefined}
+                height={typeof params.height === 'number' ? params.height : undefined}
+                {...(props as any)}
               />
             );
           },
           hr: () => <hr className="my-8 border-t border-border-color" />,
 
           // 自定义视频标签支持
-          video: ({ node, src, poster, ...props }) => {
-            if (!src) return null;
+          video: (rawProps) => {
+            const { node, src, poster, ...props } = rawProps as any
+            if (!src) return null
 
             return (
               <MediaVideo
-                src={src}
-                poster={poster}
-                caption={props.title}
-                width={props.width}
-                height={props.height}
-                autoplay={props.autoPlay}
-                loop={props.loop}
-                muted={props.muted}
-                controls={props.controls !== false}
-                {...props}
+                src={String(src)}
+                poster={poster ? String(poster) : undefined}
+                caption={(props as any).title}
+                width={typeof (props as any).width === 'number' ? (props as any).width : undefined}
+                height={typeof (props as any).height === 'number' ? (props as any).height : undefined}
+                autoplay={(props as any).autoPlay}
+                loop={(props as any).loop}
+                muted={(props as any).muted}
+                controls={(props as any).controls !== false}
+                {...(props as any)}
               />
-            );
+            )
           },
         }
         }

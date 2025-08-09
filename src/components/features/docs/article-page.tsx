@@ -22,6 +22,7 @@ import MarkdownRender from './markdown-render';
 import { CommentSection } from '../docs/comment-section';
 import { RelatedArticles } from './related-articles';
 import { ShareDialog } from './share-dialog';
+import { ArticleActions } from './article-actions';
 
 interface ArticlePageProps {
   article: Article;
@@ -32,17 +33,9 @@ export function ArticlePage({ article }: ArticlePageProps) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-  };
-
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-  };
-
-  const handleShare = () => {
-    setShowShareDialog(true);
-  };
+  const handleLike = () => setIsLiked(!isLiked)
+  const handleBookmark = () => setIsBookmarked(!isBookmarked)
+  const handleShare = () => setShowShareDialog(true)
 
   return (
     <div className="mx-auto py-8">
@@ -106,7 +99,7 @@ export function ArticlePage({ article }: ArticlePageProps) {
           </div>
 
           {/* 封面图片 */}
-          {article.coverImage && (
+          {/* {article.coverImage && (
             <div className="mb-8 rounded-lg overflow-hidden">
               <img
                 src={article.coverImage}
@@ -114,39 +107,20 @@ export function ArticlePage({ article }: ArticlePageProps) {
                 className="w-full h-64 object-cover"
               />
             </div>
-          )}
+          )} */}
 
           {/* 互动按钮 */}
-          <div className="flex items-center gap-4 mb-8">
-            <Button
-              variant={isLiked ? "default" : "outline"}
-              size="sm"
-              onClick={handleLike}
-              className="flex items-center gap-2"
-            >
-              <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-              {(article as any).likeCount || 0}
-            </Button>
-
-            <Button
-              variant={isBookmarked ? "default" : "outline"}
-              size="sm"
-              onClick={handleBookmark}
-              className="flex items-center gap-2"
-            >
-              <Bookmark className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`} />
-              收藏
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShare}
-              className="flex items-center gap-2"
-            >
-              <Share2 className="w-4 h-4" />
-              分享
-            </Button>
+          <div className="mb-8">
+            <ArticleActions
+              likes={article.likes}
+              bookmarks={article.bookmarks}
+              comments={article.comments}
+              onLike={handleLike}
+              onBookmark={handleBookmark}
+              onShare={handleShare}
+              isLiking={false}
+              isBookmarking={false}
+            />
           </div>
 
           <Separator className="mb-8" />

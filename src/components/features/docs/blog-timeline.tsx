@@ -5,8 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { format } from "date-fns"
 import { zhCN } from "date-fns/locale"
 import { Share2 } from "lucide-react"
-import { mockArticles } from "@/mock/docs"
 import type { Article } from "@/types/article"
+import { mockArticles } from "@/mock/docs"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ArticleLink } from "./article-link"
@@ -30,15 +30,15 @@ export default function BlogTimeline({ category }: BlogTimelineProps) {
     setError(null)
 
     try {
-      // 使用mock数据，按分类过滤
-      const filteredArticles = mockArticles.filter(article => article.category === category)
-      
-      // 按创建时间降序排序
-      const sortedArticles = filteredArticles.sort((a, b) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      )
+      // NOTE: 暂时使用 mock 数据，保留请求代码以便后续切换
+      // const res = await fetch(`/api/articles?${new URLSearchParams({ limit: '100', category }).toString()}`)
+      // const json = await res.json()
+      // if (!json?.success) throw new Error(json?.error || '加载失败')
+      // const list: Article[] = json.data?.data || []
 
-      setArticles(sortedArticles)
+      const list = (mockArticles as unknown as Article[]).filter(a => a.category === category)
+      const sorted = list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      setArticles(sorted)
     } catch (err) {
       setError('加载文章失败')
       console.error('Failed to load articles:', err)
