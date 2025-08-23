@@ -183,13 +183,18 @@ export function useSliderUnderline<T extends HTMLElement>({
     };
 
     updateSlider();
-    window.addEventListener('resize', updateSlider);
-    window.addEventListener('scroll', updateSlider);
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', updateSlider);
+      window.addEventListener('scroll', updateSlider);
+    }
 
     return () => {
       mountedRef.current = false;
-      window.removeEventListener('resize', updateSlider);
-      window.removeEventListener('scroll', updateSlider);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateSlider);
+        window.removeEventListener('scroll', updateSlider);
+      }
     };
   }, [activeKey]);
 

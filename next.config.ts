@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   images: {
-    domains: ['ghchart.rshah.org'],
+    domains: ['ghchart.rshah.org', 'images.unsplash.com'],
   },
 };
 

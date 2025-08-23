@@ -64,6 +64,7 @@ const Nav = () => {
               href={item.path}
               className="relative px-4 py-2 group text-theme-primary font-semibold mix-blend-difference"
               ref={getItemRef(item.path)}
+              prefetch
             >
               {displayNames[item.path] || item.name}
             </Link>
@@ -75,7 +76,7 @@ const Nav = () => {
                 asChild
                 className='inline-block text-center text-theme-primary font-bold hover:bg-theme-accent/50'
               >
-                <Link href={item.path} className='hover:text-theme-primary font-bold'>
+                <Link href={item.path} className='hover:text-theme-primary font-bold' prefetch>
                   {item.name}
                 </Link>
               </DropdownMenuItem>
@@ -85,7 +86,7 @@ const Nav = () => {
                   asChild
                   className='inline-block text-center text-theme-primary font-bold hover:bg-theme-accent/50'
                 >
-                  <Link href={child.path} className='hover:text-theme-primary font-bold'>{child.name}</Link>
+                  <Link href={child.path} className='hover:text-theme-primary font-bold' prefetch>{child.name}</Link>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
@@ -97,6 +98,7 @@ const Nav = () => {
           href={item.path}
           className="relative px-4 py-2 group text-theme-primary font-semibold mix-blend-difference"
           ref={getItemRef(item.path)}
+          prefetch
         >
           <span className="relative z-10">{item.name}</span>
         </Link>

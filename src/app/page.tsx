@@ -1,15 +1,31 @@
 'use client'
 import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar'
 import Image from 'next/image'
-import { LineMdTwitter, LineMdTiktok, LineMdGithub, Icon } from '@/components/features/icon'
+import { LineMdTwitter, LineMdTiktok, LineMdGithub } from '@/components/features/icon'
+import { SimpleSocialIcons } from '@/components/common'
 import { useMemo } from 'react'
 
 export default function Home() {
-  const iconMap = {
-    'github': LineMdGithub,
-    'twitter': LineMdTwitter,
-    'tiktok': LineMdTiktok,
-  }
+  const socialIcons = [
+    {
+      id: 'github',
+      component: LineMdGithub,
+      jumpLink: 'https://github.com/BacklightingCody',
+      label: 'GitHub Profile'
+    },
+    {
+      id: 'twitter',
+      component: LineMdTwitter,
+      jumpLink: 'https://x.com/pitilessmi77034',
+      label: 'Twitter Profile'
+    },
+    {
+      id: 'douyin',
+      component: LineMdTiktok,
+      jumpLink: 'https://www.douyin.com/user/self?from_tab_name=main&showTab=post',
+      label: 'TikTok Profile'
+    },
+  ]
 
 
   return (
@@ -21,14 +37,12 @@ export default function Home() {
         <h1 className='text-4xl py-5'>
           &nbsp;&nbsp;&nbsp;&nbsp;A Front-end &lt;developer / &gt;。
         </h1>
-        <div className='flex gap-4'>
-          {Object.entries(iconMap).map(([key, IconComponent]) => (
-            <span key={key}>
-              <Icon icon={IconComponent} size={50} />
-            </span>
-          ))}
-
-        </div>
+        <SimpleSocialIcons 
+          icons={socialIcons}
+          size="medium"
+          variant="bouncy"
+          className="hover:text-theme-primary transition-colors"
+        />
       </div>
       <div className="col-span-5 p-4 flex flex-col align-center justify-center">
         <Avatar className='flex justify-center'>

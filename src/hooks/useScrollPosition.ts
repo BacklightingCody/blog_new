@@ -3,15 +3,22 @@ import { useThrottle } from './useThrottle';
 
 export const useScrollPosition = (wait = 16) => {
   const [scroll, setScroll] = useState({ x: 0, y: 0 });
+  const [isClient, setIsClient] = useState(false);
 
   const updateScroll = useThrottle(() => {
-    setScroll({
-      x: window.scrollX,
-      y: window.scrollY,
-    });
+    if (typeof window !== 'undefined') {
+      setScroll({
+        x: window.scrollX,
+        y: window.scrollY,
+      });
+    }
   }, wait);
 
   useEffect(() => {
+    setIsClient(true);
+    
+    if (typeof window === 'undefined') return;
+
     const handleScroll = () => {
       updateScroll();
     };
@@ -24,5 +31,5 @@ export const useScrollPosition = (wait = 16) => {
     };
   }, [updateScroll]);
 
-  return scroll;
+  return isClient ? scroll : { x: 0, y: 0 };
 };
