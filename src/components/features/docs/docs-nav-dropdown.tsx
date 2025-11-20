@@ -18,18 +18,47 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { mockCategories, mockPopularArticles } from '@/mock/docs';
 import { categoryColorMap, categoryIconMap } from '@/constants/index';
 import Link from 'next/link';
+import type { Article } from '@/types/article';
 
 interface DocsNavDropdownProps {
   className?: string;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  description: string;
+  count: number;
+}
+
 export function DocsNavDropdown({ className }: DocsNavDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [categories, setCategories] = useState(mockCategories);
-  const [popularArticles, setPopularArticles] = useState(mockPopularArticles.slice(0, 3));
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [popularArticles, setPopularArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        // 加载分类和热门文章数据
+        const [categoriesRes, articlesRes] = await Promise.all([
+          import('@/mock/docs').then(m => m.mockCategories),
+          import('@/mock/docs').then(m => m.mockPopularArticles)
+        ]);
+        
+        setCategories(categoriesRes);
+        setPopularArticles(articlesRes.slice(0, 3) as unknown as Article[]);
+      } catch (error) {
+        console.error('Failed to load navigation data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>

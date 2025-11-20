@@ -1,147 +1,103 @@
-// Chat 配置常量
-
-export const CHAT_CONFIG = {
-  API_KEY: process.env.NEXT_PUBLIC_OPENAI_API_KEY || 'your-api-key-here',
-  BASEURL: process.env.NEXT_PUBLIC_CHAT_BASE_URL || 'https://api.openai.com',
-  PATH: '/v1/chat/completions',
-  
-  // 默认模型配置
-  DEFAULT_MODEL: 'gpt-3.5-turbo',
-  DEFAULT_TEMPERATURE: 0.7,
-  DEFAULT_MAX_TOKENS: 2000,
-  
-  // 消息限制
-  MAX_MESSAGE_LENGTH: 4000,
-  MAX_HISTORY_MESSAGES: 20,
-  
-  // 文件上传限制
-  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
-  ALLOWED_IMAGE_TYPES: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  ALLOWED_FILE_TYPES: ['.txt', '.md', '.json', '.csv', '.pdf'],
-};
-
-// 模型接口定义
-export interface ModelInfo {
+// 统一的模型描述接口（单一事实来源）
+export interface ChatModelDescriptor {
+  // 选择值与厂商真实模型名
   value: string;
   name: string;
-  maxTokens: number;
-  supportsImage: boolean;
   provider: string;
-  group: string;
+
+  // 接口与代理
+  urls: {
+    generate: string; // 非流式直连 URL
+    stream: string;   // 流式直连 URL（SSE）
+  };
+  proxyPath: string;   // 统一本地代理路径（前端默认走代理）
+  apiKeyEnv: string;   // 服务端读取的环境变量名（前端不读取值）
+
+  // 能力
+  supports: {
+    image: boolean;
+    stream: boolean;
+  };
+
+  // 限制
+  limits: {
+    maxTokens: number;
+    maxMessageLength: number;
+    maxHistoryMessages: number;
+    maxFileSize: number; // bytes
+    allowedImageTypes: string[];
+    allowedFileTypes: string[];
+  };
 }
 
-// 可用模型列表
-export const AVAILABLE_MODELS: ModelInfo[] = [
+// 默认模型 key（仅保留一个模型）
+export const DEFAULT_MODEL = 'gemini-2.0-flash';
+
+// 可用模型（仅保留 Gemini 2.0 Flash）
+export const AVAILABLE_MODELS: ChatModelDescriptor[] = [
   {
-    value: 'gpt-4o',
-    name: 'GPT-4o',
-    maxTokens: 4096,
-    supportsImage: true,
-    provider: 'openai',
-    group: 'OpenAI'
-  },
-  {
-    value: 'gpt-4o-mini',
-    name: 'GPT-4o Mini',
-    maxTokens: 4096,
-    supportsImage: true,
-    provider: 'openai',
-    group: 'OpenAI'
-  },
-  {
-    value: 'gpt-3.5-turbo',
-    name: 'GPT-3.5 Turbo',
-    maxTokens: 4096,
-    supportsImage: false,
-    provider: 'openai',
-    group: 'OpenAI'
-  },
-  {
-    value: 'claude-3-5-sonnet-20241022',
-    name: 'Claude 3.5 Sonnet',
-    maxTokens: 8192,
-    supportsImage: true,
-    provider: 'anthropic',
-    group: 'Anthropic'
-  },
-  {
-    value: 'gemini-1.5-pro-latest',
-    name: 'Gemini 1.5 Pro',
-    maxTokens: 8192,
-    supportsImage: true,
+    value: 'gemini-2.0-flash',
+    name: 'Gemini 2.0 Flash',
     provider: 'google',
-    group: 'Google'
+    urls: {
+      generate: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+      stream: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse'
+    },
+    proxyPath: '/api/chat/gemini',
+    apiKeyEnv: 'GEMINI_MODEL_API_KEY',
+    supports: {
+      image: true,
+      stream: true
+    },
+    limits: {
+      maxTokens: 8192,
+      maxMessageLength: 4000,
+      maxHistoryMessages: 20,
+      maxFileSize: 5 * 1024 * 1024, // 10MB
+      allowedImageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      allowedFileTypes: ['.txt', '.md', '.json', '.csv', '.pdf']
+    }
   },
   {
-    value: 'hunyuan-t1-latest',
-    name: '腾讯混元',
-    maxTokens: 4096,
-    supportsImage: true,
-    provider: 'tencent',
-    group: '腾讯'
-  },
-  {
-    value: 'DeepSeek-R1-Online-64K',
-    name: 'DeepSeek R1',
-    maxTokens: 65536,
-    supportsImage: false,
-    provider: 'deepseek',
-    group: 'DeepSeek'
+    value: 'qwen-image',
+    name: 'qwen-image',
+    provider: 'qwen',
+    urls: {
+      generate: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis',
+      stream: 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis'
+    },
+    proxyPath: '/api/chat/qwen',
+    apiKeyEnv: 'QWEN_MODEL_API_KEY',
+    supports: {
+      image: true,
+      stream: true
+    },
+    limits: {
+      maxTokens: 8192,
+      maxMessageLength: 4000,
+      maxHistoryMessages: 20,
+      maxFileSize: 5 * 1024 * 1024, // 10MB
+      allowedImageTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+      allowedFileTypes: ['.txt', '.md', '.json', '.csv', '.pdf']
+    }
   }
 ];
 
-// 模型配置映射
-export const MODEL_CONFIG_MAP = {
-  'gpt-4o': {
-    name: 'GPT-4o',
-    maxTokens: 4096,
-    supportImages: true,
-    provider: 'openai'
-  },
-  'gpt-4o-mini': {
-    name: 'GPT-4o Mini',
-    maxTokens: 4096,
-    supportImages: true,
-    provider: 'openai'
-  },
-  'gpt-3.5-turbo': {
-    name: 'GPT-3.5 Turbo',
-    maxTokens: 4096,
-    supportImages: false,
-    provider: 'openai'
-  },
-  'claude-3-5-sonnet-20241022': {
-    name: 'Claude 3.5 Sonnet',
-    maxTokens: 8192,
-    supportImages: true,
-    provider: 'anthropic'
-  },
-  'gemini-1.5-pro-latest': {
-    name: 'Gemini 1.5 Pro',
-    maxTokens: 8192,
-    supportImages: true,
-    provider: 'google'
-  }
+// 辅助方法
+export const getModelByValue = (modelValue: string): ChatModelDescriptor | undefined =>
+  AVAILABLE_MODELS.find(m => m.value === modelValue);
+
+export const modelSupportsImage = (modelValue: string): boolean => !!getModelByValue(modelValue)?.supports.image;
+export const modelSupportsStream = (modelValue: string): boolean => !!getModelByValue(modelValue)?.supports.stream;
+
+export const getModelUrl = (modelValue: string, opts?: { stream?: boolean }): string => {
+  const m = getModelByValue(modelValue) || getModelByValue(DEFAULT_MODEL)!;
+  return opts?.stream ? m.urls.stream : m.urls.generate;
 };
 
-// 获取分组的模型数据
-export const getGroupedModels = () => {
-  const groups: Record<string, ModelInfo[]> = {};
-  
-  AVAILABLE_MODELS.forEach(model => {
-    if (!groups[model.group]) {
-      groups[model.group] = [];
-    }
-    groups[model.group].push(model);
-  });
-  
-  return groups;
-};
-
-// 检查模型是否支持图片
-export const modelSupportsImage = (modelValue: string): boolean => {
-  const model = AVAILABLE_MODELS.find(m => m.value === modelValue);
-  return model?.supportsImage || false;
+export const getModelProxyPath = (modelValue: string): string => {
+  const m = getModelByValue(modelValue) || getModelByValue(DEFAULT_MODEL)!;
+  return m.proxyPath;
 };
 
 // 错误消息

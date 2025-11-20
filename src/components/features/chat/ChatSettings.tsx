@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ModelConfig, SystemPrompt } from '@/zustand/stores/chatStore';
+import { AVAILABLE_MODELS } from '@/constants/chat';
 import { cn } from '@/lib/utils';
 
 interface ChatSettingsProps {
@@ -44,16 +45,12 @@ export function ChatSettings({
 
   if (!isOpen) return null;
 
-  // 可用模型列表
-  const availableModels = [
-    { id: 'ChatGpt', name: 'ChatGPT', description: '通用对话模型' },
-    { id: 'hunyuan-t1-latest', name: '腾讯混元', description: '腾讯自研大模型' },
-    { id: 'DeepSeek-R1-Online-64K', name: 'DeepSeek R1', description: '深度求索推理模型' },
-    { id: 'gpt-4o', name: 'GPT-4o', description: 'OpenAI最新模型' },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini', description: '轻量级GPT-4o' },
-    { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', description: 'Anthropic Claude模型' },
-    { id: 'gemini-1.5-pro-latest', name: 'Gemini 1.5 Pro', description: 'Google Gemini模型' }
-  ];
+  // 从配置驱动的模型列表
+  const availableModels = AVAILABLE_MODELS.map(m => ({
+    id: m.value,
+    name: m.name,
+    description: `${m.provider === 'google' ? 'Google' : m.provider} 多模态对话模型${m.supports.image ? '（支持图片）' : ''}`
+  }));
 
   const handleSaveNewPrompt = () => {
     if (newPrompt.name.trim() && newPrompt.content.trim()) {
@@ -231,21 +228,28 @@ export function ChatSettings({
                   <CardDescription>选择或编辑系统提示词</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Select value={selectedPromptId} onValueChange={onPromptSelect}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="选择系统提示词" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {systemPrompts.map((prompt) => (
-                        <SelectItem key={prompt.id} value={prompt.id}>
-                          <div className="flex items-center gap-2">
-                            <span>{prompt.name}</span>
-                            {prompt.isDefault && <Badge variant="secondary" className="text-xs">默认</Badge>}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {/* 改为“使用+重置”按钮而非下拉 Select */}
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="cursor-pointer"
+                      onClick={() => {
+                        // 选用第一条或提示用户从下方列表选择并应用
+                        if (systemPrompts.length > 0) onPromptSelect(systemPrompts[0].id);
+                      }}
+                    >
+                      使用当前所选
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="cursor-pointer"
+                      onClick={() => onPromptSelect('')}
+                    >
+                      重置（不使用）
+                    </Button>
+                  </div>
 
                   {/* 提示词列表 */}
                   <div className="space-y-3 max-h-60 overflow-y-auto">
@@ -263,16 +267,14 @@ export function ChatSettings({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2">
                               <h4 className="font-medium text-sm">{prompt.name}</h4>
-                              {prompt.isDefault && (
-                                <Badge variant="secondary" className="text-xs">默认</Badge>
-                              )}
+                             {selectedPromptId === prompt.id && (
+                               <Badge variant="secondary" className="text-xs">已使用</Badge>
+                             )}
                             </div>
                             {prompt.description && (
                               <p className="text-xs text-muted-foreground mb-2">{prompt.description}</p>
                             )}
-                            <p className="text-xs text-muted-foreground line-clamp-2">
-                              {prompt.content}
-                            </p>
+                             <p className="text-xs text-muted-foreground line-clamp-2">{prompt.content}</p>
                           </div>
                           <div className="flex items-center gap-1 ml-2">
                             <Button
@@ -283,6 +285,14 @@ export function ChatSettings({
                             >
                               <Sliders className="w-3 h-3" />
                             </Button>
+                             <Button
+                               variant="outline"
+                               size="sm"
+                               onClick={() => onPromptSelect(prompt.id)}
+                               className="h-8 px-2 text-xs"
+                             >
+                               使用
+                             </Button>
                             {!prompt.isDefault && (
                               <Button
                                 variant="ghost"

@@ -4,6 +4,15 @@
     "source.fixAll": true,
     "source.fixAll.eslint": true
   },
-  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
-  "prettier.requireConfig": true
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "prettier.requireConfig": true,
+  "github.copilot.chat.instructions": [
+    "Always follow the coding rules in RULES.md located in the repo root.",
+    "Never bypass these rules unless explicitly told to ignore them."
+  ]
 }

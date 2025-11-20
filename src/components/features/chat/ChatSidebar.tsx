@@ -26,6 +26,8 @@ interface ChatSidebarProps {
   onRenameSession: (sessionId: string, newName: string) => void;
   onTogglePin: (sessionId: string) => void;
   onChangeSessionType: (sessionId: string, sessionType: 'public' | 'private') => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 export function ChatSidebar({
@@ -36,7 +38,9 @@ export function ChatSidebar({
   onDeleteSession,
   onRenameSession,
   onTogglePin,
-  onChangeSessionType
+  onChangeSessionType,
+  collapsed = false,
+  onToggleCollapse
 }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
@@ -299,10 +303,39 @@ export function ChatSidebar({
     </div>
   );
 
+  if (collapsed) {
+    return (
+      <div className={cn("h-full border-r bg-gradient-to-b from-background to-muted/20 flex flex-col items-center py-3 gap-2 w-12")}> 
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 w-9 p-0 rounded-lg cursor-pointer"
+          onClick={() => onCreateSession('private')}
+          title="新建对话"
+        >
+          <Plus className="w-4 h-4" />
+        </Button>
+        {onToggleCollapse && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 w-9 p-0 rounded-lg cursor-pointer"
+            onClick={onToggleCollapse}
+            title="展开侧边栏"
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4"><path d="M15 5l7 7-7 7" stroke="currentColor" strokeWidth="2" fill="none"/></svg>
+          </Button>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="w-80 h-full border-r bg-gradient-to-b from-background to-muted/20 flex flex-col">
+    <div className={cn(
+      "h-full border-r bg-gradient-to-b from-background to-muted/20 flex flex-col transition-all duration-300 w-80"
+    )}>
       {/* 头部区域 */}
-      <div className="p-4 border-b bg-background/95 backdrop-blur-sm">
+      <div className="p-4 border-b bg-background/95 backdrop-blur-sm relative">
         <div className="space-y-3">
           {/* 新建对话按钮 */}
           <div className="flex gap-2">
@@ -314,6 +347,18 @@ export function ChatSidebar({
               <Plus className="w-4 h-4 mr-2" />
               新建对话
             </Button>
+            {onToggleCollapse && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-11 w-10 p-0 rounded-xl cursor-pointer flex justify-center items-center"
+                onClick={onToggleCollapse}
+                title="收起侧边栏"
+              >
+                {/* <svg viewBox="0 0 24 24" className="w-4 h-4"><path d="M15 5l7 7-7 7" stroke="currentColor" strokeWidth="2" fill="none"/></svg> */}
+                <svg viewBox="0 0 24 24" className="w-4 h-4"><path d="M9 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" fill="none"/></svg>
+              </Button>
+            )}
           </div>
 
           {/* 搜索框 */}

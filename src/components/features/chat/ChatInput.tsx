@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { Send, Paperclip, Image, FileText, X, Smile, Mic, Square } from 'lucide-react';
+import { Send, Paperclip, Image, FileText, X, Smile, Mic, Square, Hash } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -13,12 +13,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { PlaceholderItem, SendMessageRequest } from '@/zustand/stores/chatStore';
 import { cn } from '@/lib/utils';
+import { AttachmentSection } from './Attachments';
 
 interface ChatInputProps {
   onSendMessage: (request: SendMessageRequest) => Promise<void>;
   isLoading?: boolean;
   onCancelRequest?: () => void;
-  placeholders?: PlaceholderItem[];
   disabled?: boolean;
 }
 
@@ -26,18 +26,18 @@ export function ChatInput({
   onSendMessage,
   isLoading = false,
   onCancelRequest,
-  placeholders = [],
   disabled = false
 }: ChatInputProps) {
   const [input, setInput] = useState('');
   const [attachedImages, setAttachedImages] = useState<string[]>([]);
   const [attachedTexts, setAttachedTexts] = useState<string[]>([]);
+  const [placeholders, setPlaceholders] = useState<PlaceholderItem[]>([]);
   const [isComposing, setIsComposing] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const imageInputRef = useRef<HTMLInputElement>(null);
+  const openImagePickerRef = useRef<() => void>(() => {});
+  const openFilePickerRef = useRef<() => void>(() => {});
 
   // 处理发送消息
   const handleSend = useCallback(async () => {
@@ -46,7 +46,8 @@ export function ChatInput({
     const request: SendMessageRequest = {
       content: input.trim(),
       images: attachedImages,
-      texts: attachedTexts
+      texts: attachedTexts,
+      placeholders
     };
 
     // 清空输入
@@ -66,37 +67,9 @@ export function ChatInput({
     }
   };
 
-  // 处理图片上传
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    files.forEach(file => {
-      if (file.type.startsWith('image/') && file.size <= 10 * 1024 * 1024) { // 10MB限制
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          setAttachedImages(prev => [...prev, result]);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-    e.target.value = '';
-  };
-
-  // 处理文件上传
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    files.forEach(file => {
-      if (file.size <= 5 * 1024 * 1024) { // 5MB限制
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const result = e.target?.result as string;
-          setAttachedTexts(prev => [...prev, result]);
-        };
-        reader.readAsText(file);
-      }
-    });
-    e.target.value = '';
-  };
+  // 附件添加（由解耦组件回调）
+  const addImages = (imgs: string[]) => setAttachedImages((prev) => [...prev, ...imgs]);
+  const addTexts = (txts: string[]) => setAttachedTexts((prev) => [...prev, ...txts]);
 
   // 移除附件
   const removeImage = (index: number) => {
@@ -106,6 +79,14 @@ export function ChatInput({
   const removeText = (index: number) => {
     setAttachedTexts(prev => prev.filter((_, i) => i !== index));
   };
+
+  // 占位符管理（简单示例：添加/移除）
+  const addPlaceholder = (p: PlaceholderItem) => {
+    setPlaceholders(prev => [...prev, p]);
+  }
+  const removePlaceholder = (idx: number) => {
+    setPlaceholders(prev => prev.filter((_, i) => i !== idx));
+  }
 
   // 插入占位符
   const insertPlaceholder = (placeholder: PlaceholderItem) => {
@@ -141,83 +122,37 @@ export function ChatInput({
 
   return (
     <div className="border-t bg-background/95 backdrop-blur-sm">
-      {/* 附件预览区域 */}
-      {hasAttachments && (
-        <div className="px-6 py-4 border-b bg-muted/20">
-          <div className="space-y-3">
-            {/* 图片附件 */}
-            {attachedImages.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Image className="w-4 h-4" />
-                  <span className="text-sm font-medium">
-                    图片附件 ({attachedImages.length})
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {attachedImages.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <div className="relative overflow-hidden rounded-xl border-2 border-border/50 shadow-sm hover:shadow-md transition-all duration-200">
-                        <img
-                          src={image}
-                          alt={`附件 ${index + 1}`}
-                          className="w-20 h-20 object-cover"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200" />
-                      </div>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 w-6 h-6 p-0 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 文本附件 */}
-            {attachedTexts.length > 0 && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">
-                    文本附件 ({attachedTexts.length})
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {attachedTexts.map((text, index) => (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-background/80 rounded-xl border border-border/50 hover:border-border transition-colors duration-200">
-                      <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium truncate">
-                          文本内容 ({text.length} 字符)
-                        </div>
-                        <div className="text-xs text-muted-foreground truncate">
-                          {text.substring(0, 50)}...
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeText(index)}
-                        className="w-8 h-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors duration-200"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+      {/* 占位符标签（位于图片占位符上方） */}
+      {placeholders.length > 0 && (
+        <div className="px-6 py-3 border-b bg-muted/10">
+          <div className="flex items-center gap-2 flex-wrap">
+            {placeholders.map((ph, idx) => (
+              <Badge key={`${ph.key}-${idx}`} variant="outline" className="text-xs flex items-center gap-2">
+                <span>{`@{{${ph.key}}}`}</span>
+                {ph.type && <span className="opacity-60">({ph.type})</span>}
+                <Button variant="ghost" size="sm" className="h-5 w-5 p-0" onClick={() => removePlaceholder(idx)}>
+                  <X className="w-3 h-3" />
+                </Button>
+              </Badge>
+            ))}
           </div>
         </div>
       )}
+
+      {/* 附件区域（解耦为通用组件） */}
+      <AttachmentSection
+        images={attachedImages}
+        texts={attachedTexts}
+        onImagesAdd={addImages}
+        onTextsAdd={addTexts}
+        onRemoveImage={removeImage}
+        onRemoveText={removeText}
+        disabled={disabled || isLoading}
+      >{({ openImagePicker, openFilePicker }) => {
+        openImagePickerRef.current = openImagePicker;
+        openFilePickerRef.current = openFilePicker;
+        return null;
+      }}</AttachmentSection>
 
       {/* 输入区域 */}
       <div className="p-6">
@@ -262,13 +197,35 @@ export function ChatInput({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => imageInputRef.current?.click()}>
+                <DropdownMenuItem onClick={() => openImagePickerRef.current?.()}>
                   <Image className="w-4 h-4 mr-3" />
                   上传图片
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                <DropdownMenuItem onClick={() => openFilePickerRef.current?.()}>
                   <FileText className="w-4 h-4 mr-3" />
                   上传文件
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* 占位符按钮（简单示例：添加 doc/img 两类） */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={disabled || isLoading}
+                  className="w-9 h-9 p-0 text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all duration-200 rounded-xl"
+                >
+                  <Hash className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => addPlaceholder({ id: `ph-${Date.now()}`, key: 'doc', type: 'doc', label: '文档', value: '' })}>
+                  添加占位符：doc
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => addPlaceholder({ id: `ph-${Date.now()}`, key: 'img', type: 'img', label: '图片', value: '' })}>
+                  添加占位符：img
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -380,23 +337,7 @@ export function ChatInput({
         </div>
       </div>
 
-      {/* 隐藏的文件输入 */}
-      <input
-        ref={imageInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleImageUpload}
-        className="hidden"
-      />
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".txt,.md,.json,.csv,.doc,.docx"
-        multiple
-        onChange={handleFileUpload}
-        className="hidden"
-      />
+      {/* 附件输入已内聚至 AttachmentSection */}
     </div>
   );
 }

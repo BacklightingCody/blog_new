@@ -2,7 +2,7 @@
 'use client';
 
 import { ClerkProvider } from '@clerk/nextjs';
-import { useThemeStore, themes } from '@/zustand/themeStore';
+import { useThemeStore, themes } from '@/zustand/stores/themeStore';
 import { useEffect, useLayoutEffect, useState } from 'react';
 
 export default function ClientClerkProvider({ children }: { children: React.ReactNode }) {
@@ -13,6 +13,8 @@ export default function ClientClerkProvider({ children }: { children: React.Reac
 
   // 监听主题变化
   useLayoutEffect(() => {
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
     const updateTheme = () => {
       setIsDarkMode(document.documentElement.classList.contains('dark'));
       setIsEyeMode(document.documentElement.classList.contains('eye-protection-mode'));

@@ -1,6 +1,6 @@
 'use client'
 import { BookOpen, Code, BookText, Sparkles, X } from "lucide-react"
-import { useFixedId } from '@/hooks'
+import { getFixedId } from '@/utils/id'
 export const categories = [
   { key: "programming", label: "编程", icon: Code },
   { key: "novels", label: "小说", icon: BookText },
@@ -125,7 +125,7 @@ const bookList = {
       cover: "/books/novel/default.jpg",
       progress: 100,
       description:
-        `赤色流星划过天际后，人类文明陷入停滞，从那天起，人们再也无法制造一枚火箭，一颗核弹,一架飞机,一台汽车....近代科学堆砌而成的文明金字塔轰然坍塌，而灾难，远不止此。\n 灰色的世界随着赤色流星降临,像是镜面后的鬼魅倒影，将文明世界一点点拖入无序的深渊。\n 在这个时代，人命渺如尘埃； \n 在这个时代，人类灿若星辰。\n大厦将倾,有人见一戏子屹立文明废墟之上,红帔似血，时笑时哭，时代的帘幕在他身后缓缓打开,他张开双臂，对着累累众生轻声低语-好戏.…开场。`,
+        `赤色流星划过天际后，人类文明陷入停滞，从那天起，人们再也无法制造一枚火箭，一颗核弹,一架飞机,一台汽车....近代科学堆砌而成的文明金字塔轰然坍塌，而灾难，远不止此.\n 灰色的世界随着赤色流星降临,像是镜面后的鬼魅倒影，将文明世界一点点拖入无序的深渊.\n 在这个时代，人命渺如尘埃； \n 在这个时代，人类灿若星辰.\n大厦将倾,有人见一戏子屹立文明废墟之上,红帔似血，时笑时哭，时代的帘幕在他身后缓缓打开,他张开双臂，对着累累众生轻声低语-好戏.…开场.`,
       author: "三九音域",
       tags: ["都市", "逆袭", "娱乐圈"],
       rating: 4.7,
@@ -269,10 +269,10 @@ const bookList = {
 export const books = {
   programming: bookList.programming.map((book) => ({
     ...book,
-    id: useFixedId(book.title),
+    id: getFixedId(book.title),
   })),
   novels: bookList.novels.map((book) => ({
     ...book,
-    id: useFixedId(book.title),
+    id: getFixedId(book.title),
   })),
 }

@@ -96,27 +96,7 @@ npm run dev
     slug: 'react-hooks-guide',
     title: 'React Hooks 完全指南',
     summary: '深入理解 React Hooks 的使用方法和最佳实践',
-    content: `# React Hooks 完全指南
-
-React Hooks 是 React 16.8 引入的新特性，让你可以在函数组件中使用状态和其他 React 特性...
-
-## 常用 Hooks
-
-### useState
-用于在函数组件中添加状态。
-
-\`\`\`javascript
-const [count, setCount] = useState(0);
-\`\`\`
-
-### useEffect
-用于处理副作用，如数据获取、订阅等。
-
-\`\`\`javascript
-useEffect(() => {
-  document.title = \`Count: \${count}\`;
-}, [count]);
-\`\`\``,
+    content: "# React Hooks 完全指南：从入门到精通\n\n## 引言\n\nReact Hooks 是 React 16.8 引入的革命性特性，它让我们能够在函数组件中使用状态和其他 React 特性。本文将深入探讨 Hooks 的核心概念和实际应用。\n\n## 什么是 Hooks？\n\nHooks 是一些可以让你在函数组件里\"钩入\" React state 及生命周期等特性的函数。\n\n### 基础 Hooks\n\n#### 1. useState\n\n```javascript\nimport React, { useState } from 'react';\n\nfunction Counter() {\n  const [count, setCount] = useState(0);\n\n  return (\n    <div>\n      <p>你点击了 {count} 次</p>\n      <button onClick={() => setCount(count + 1)}>\n        点击我\n      </button>\n    </div>\n  );\n}\n```\n\n#### 2. useEffect\n\n```javascript\nimport React, { useState, useEffect } from 'react';\n\nfunction Example() {\n  const [count, setCount] = useState(0);\n\n  // 相当于 componentDidMount 和 componentDidUpdate:\n  useEffect(() => {\n    document.title = `你点击了 ${count} 次`;\n  });\n\n  return (\n    <div>\n      <p>你点击了 {count} 次</p>\n      <button onClick={() => setCount(count + 1)}>\n        点击我\n      </button>\n    </div>\n  );\n}\n```\n\n## 高级 Hooks\n\n### useContext\n\n```javascript\nconst ThemeContext = React.createContext();\n\nfunction App() {\n  return (\n    <ThemeContext.Provider value=\"dark\">\n      <Toolbar />\n    </ThemeContext.Provider>\n  );\n}\n\nfunction Toolbar() {\n  return (\n    <div>\n      <ThemedButton />\n    </div>\n  );\n}\n\nfunction ThemedButton() {\n  const theme = useContext(ThemeContext);\n  return (\n    <button style={{ background: theme === 'dark' ? 'black' : 'white' }}>\n      我是一个 {theme} 主题的按钮\n    </button>\n  );\n}\n```\n\n### useReducer\n\n```javascript\nconst initialState = { count: 0 };\n\nfunction reducer(state, action) {\n  switch (action.type) {\n    case 'increment':\n      return { count: state.count + 1 };\n    case 'decrement':\n      return { count: state.count - 1 };\n    default:\n      throw new Error();\n  }\n}\n\nfunction Counter() {\n  const [state, dispatch] = useReducer(reducer, initialState);\n  return (\n    <>\n      Count: {state.count}\n      <button onClick={() => dispatch({ type: 'decrement' })}>-</button>\n      <button onClick={() => dispatch({ type: 'increment' })}>+</button>\n    </>\n  );\n}\n```\n\n## 自定义 Hooks\n\n```javascript\nfunction useFetch(url) {\n  const [data, setData] = useState(null);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState(null);\n\n  useEffect(() => {\n    const fetchData = async () => {\n      try {\n        setLoading(true);\n        const response = await fetch(url);\n        const result = await response.json();\n        setData(result);\n      } catch (err) {\n        setError(err);\n      } finally {\n        setLoading(false);\n      }\n    };\n\n    fetchData();\n  }, [url]);\n\n  return { data, loading, error };\n}\n\n// 使用自定义 Hook\nfunction UserProfile({ userId }) {\n  const { data: user, loading, error } = useFetch(`/api/users/${userId}`);\n\n  if (loading) return <div>加载中...</div>;\n  if (error) return <div>错误: {error.message}</div>;\n  if (!user) return <div>用户不存在</div>;\n\n  return (\n    <div>\n      <h1>{user.name}</h1>\n      <p>{user.email}</p>\n    </div>\n  );\n}\n```\n\n## 性能优化\n\n### useMemo\n\n```javascript\nfunction ExpensiveComponent({ items }) {\n  const expensiveValue = useMemo(() => {\n    return items.reduce((sum, item) => sum + item.value, 0);\n  }, [items]);\n\n  return <div>总计: {expensiveValue}</div>;\n}\n```\n\n### useCallback\n\n```javascript\nfunction Parent({ items }) {\n  const [count, setCount] = useState(0);\n\n  const handleClick = useCallback(() => {\n    console.log('点击了');\n  }, []);\n\n  return (\n    <div>\n      <button onClick={() => setCount(count + 1)}>计数: {count}</button>\n      <Child onClick={handleClick} />\n    </div>\n  );\n}\n\nconst Child = React.memo(({ onClick }) => {\n  console.log('Child 重新渲染');\n  return <button onClick={onClick}>子组件按钮</button>;\n});\n```\n\n## 最佳实践\n\n### 1. 遵循 Hooks 规则\n- 只在最顶层使用 Hook\n- 只在 React 函数中调用 Hook\n\n### 2. 使用 ESLint 插件\n```bash\nnpm install eslint-plugin-react-hooks --save-dev\n```\n\n### 3. 合理拆分 useEffect\n```javascript\n// ❌ 不好的做法\nuseEffect(() => {\n  // 处理用户数据\n  fetchUser();\n  // 处理订阅\n  const subscription = subscribeToSomething();\n  return () => subscription.unsubscribe();\n}, [userId, someOtherDep]);\n\n// ✅ 好的做法\nuseEffect(() => {\n  fetchUser();\n}, [userId]);\n\nuseEffect(() => {\n  const subscription = subscribeToSomething();\n  return () => subscription.unsubscribe();\n}, [someOtherDep]);\n```\n\n## 总结\n\nReact Hooks 为函数组件带来了强大的能力，让我们能够：\n\n1. **复用状态逻辑** - 通过自定义 Hooks\n2. **简化组件** - 减少类组件的复杂性\n3. **更好的性能** - 通过 useMemo 和 useCallback\n4. **更清晰的代码** - 相关逻辑可以组织在一起\n\n掌握 Hooks 是现代 React 开发的必备技能，希望这篇指南能帮助你更好地理解和使用 Hooks！",
     html: '<h1>React Hooks 完全指南</h1><p>React Hooks 是 React 16.8 引入的新特性...</p>',
     coverImage: '/images/react-hooks-cover.jpg',
     readTime: 8,

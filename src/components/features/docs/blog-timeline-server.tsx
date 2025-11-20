@@ -1,0 +1,164 @@
+"use client"
+
+import { useState, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { format } from "date-fns"
+import { zhCN } from "date-fns/locale"
+import { Share2 } from "lucide-react"
+import type { Article } from "@/types/article"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { ArticleLink } from "./article-link"
+import { ShareDialog } from "./share-dialog"
+
+interface BlogTimelineServerProps {
+  category: string
+  initialArticles: Article[]
+}
+
+export default function BlogTimelineServer({ category, initialArticles }: BlogTimelineServerProps) {
+  const [hoveredArticle, setHoveredArticle] = useState<number | null>(null)
+  const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [shareArticle, setShareArticle] = useState<Article | null>(null)
+
+  // 获取所有标签
+  const allTags = useMemo(() => {
+    const tags = new Set<string>()
+    initialArticles.forEach(article => {
+      article.articleTags.forEach(articleTag => tags.add(articleTag.tag.name))
+    })
+    return Array.from(tags)
+  }, [initialArticles])
+
+  // 根据选中的标签筛选文章
+  const filteredArticles = useMemo(() => {
+    if (!selectedTag) return initialArticles
+    return initialArticles.filter(article =>
+      article.articleTags.some(articleTag => articleTag.tag.name === selectedTag)
+    )
+  }, [initialArticles, selectedTag])
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return format(date, "MM/dd/yyyy", { locale: zhCN })
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* 文章统计 */}
+      <div className="text-sm text-muted-foreground">
+        共找到 {initialArticles.length} 篇文章
+      </div>
+
+      {/* 标签选择器 */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setSelectedTag(null)}
+          className={cn(
+            "relative rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-theme-primary cursor-pointer",
+            selectedTag === null ? "bg-theme-primary" : "bg-muted/40"
+          )}
+        >
+          全部
+          {selectedTag === null && (
+            <motion.div
+              layoutId="activeTagBg"
+              className="absolute inset-0 rounded-full bg-theme-primary"
+              style={{ zIndex: -1 }}
+              initial={false}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            />
+          )}
+        </button>
+        {allTags.map(tag => (
+          <button
+            key={tag}
+            onClick={() => setSelectedTag(tag)}
+            className={cn(
+              "relative rounded-full px-4 py-2 text-sm font-medium transition-colors hover:bg-theme-primary cursor-pointer",
+              selectedTag === tag ? "bg-theme-primary" : "bg-muted/40"
+            )}
+          >
+            {tag}
+            {selectedTag === tag && (
+              <motion.div
+                layoutId="activeTagBg"
+                className="absolute inset-0 rounded-full bg-theme-primary"
+                style={{ zIndex: -1 }}
+                initial={false}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* 文章时间线 */}
+      <div className="relative">
+        <div className="absolute left-2 top-0 h-full w-[2px] bg-theme-primary/30" />
+        <AnimatePresence mode="wait">
+          <ul className="space-y-6">
+            {filteredArticles.map((article) => (
+              <motion.li
+                key={`${article.category}-${article.id}`}
+                className="relative pl-8"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="absolute left-[2px] top-1.5 h-[14px] w-[14px] rounded-full border-1 bg-theme-secondary" />
+                <div
+                  className="group block"
+                  onMouseEnter={() => setHoveredArticle(article.id)}
+                  onMouseLeave={() => setHoveredArticle(null)}
+                >
+                  <div className="flex flex-col justify-between gap-1 sm:flex-row sm:items-center">
+                    <h3 className="relative text-lg font-medium transition-colors group-hover:text-theme-primary">
+                      <ArticleLink article={article}>
+                        {article.title}
+                      </ArticleLink>
+                      <div className="relative">
+                        {hoveredArticle === article.id && (
+                          <motion.div
+                            className="absolute -bottom-1 left-0 h-[2px] w-full bg-theme-primary"
+                            initial={{ width: 0, left: 0, right: "100%" }}
+                            animate={{ width: "100%", left: 0, right: 0 }}
+                            exit={{ width: 0, left: "100%", right: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                          />
+                        )}
+                      </div>
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <time className="text-sm text-muted-foreground">{formatDate(article.createdAt)}</time>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setShareArticle(article);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </motion.li>
+            ))}
+          </ul>
+        </AnimatePresence>
+      </div>
+
+      {/* 分享对话框 */}
+      {shareArticle && (
+        <ShareDialog 
+          article={shareArticle} 
+          onClose={() => setShareArticle(null)} 
+        />
+      )}
+    </div>
+  )
+}

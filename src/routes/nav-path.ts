@@ -16,16 +16,20 @@ const navPath = [
     name: '文稿',
     children: [
       {
-        path: '/docs/programming',
+        path: '/docs/categories/programming',
         name: '编程'
       },
       {
-        path: '/docs/ai',
+        path: '/docs/categories/ai',
         name: 'AI'
       },
       {
-        path: '/docs/recipe',
+        path: '/docs/categories/recipe',
         name: '菜谱'
+      },
+      {
+        path: '/docs/categories/life',
+        name: '生活'
       }
     ]
   },

@@ -49,43 +49,38 @@ interface CommentSectionProps {
 }
 
 import { fetchComments as apiFetchComments, postComment as apiPostComment, postReply as apiPostReply, likeComment as apiLikeComment } from '@/services/articles'
+import { getArticleComments, postComment as apiPostCommentNew, replyToComment, likeComment as apiLikeCommentNew, deleteComment } from '@/lib/api/database'
 
 export function CommentSection({ articleId }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
+  
+  // 使用新的API加载评论
   useEffect(() => {
     const load = async () => {
-      const res = await apiFetchComments(articleId)
-      if (res?.success) {
-        // 适配服务端评论结构到本地 Comment 接口
-        const mapped: Comment[] = (res.data || []).map((c: any) => ({
+      try {
+        const result = await getArticleComments(articleId, { limit: 50 });
+        const mapped: Comment[] = result.comments.map((c: any) => ({
           id: c.id,
           content: c.content,
           author: {
-            id: c.user.id,
-            name: c.user.firstName || c.user.username,
-            avatar: c.user.imageUrl,
+            id: c.user?.id || 1,
+            name: c.user?.firstName || c.user?.username || 'Anonymous',
+            avatar: c.user?.imageUrl,
           },
           createdAt: c.createdAt,
           likes: c.likes || 0,
           isLiked: false,
-          replies: (c.replies || []).map((r: any) => ({
-            id: r.id,
-            content: r.content,
-            author: {
-              id: r.user.id,
-              name: r.user.firstName || r.user.username,
-              avatar: r.user.imageUrl,
-            },
-            createdAt: r.createdAt,
-            likes: r.likes || 0,
-            isLiked: false,
-          }))
-        }))
-        setComments(mapped)
+          // TODO: 如果后端支持回复层级，可以在这里处理replies
+          replies: [],
+        }));
+        setComments(mapped);
+      } catch (error) {
+        console.error('加载评论失败:', error);
       }
-    }
-    load()
-  }, [articleId])
+    };
+    load();
+  }, [articleId]);
+  
   const [newComment, setNewComment] = useState('');
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyContent, setReplyContent] = useState('');
@@ -97,22 +92,30 @@ export function CommentSection({ articleId }: CommentSectionProps) {
 
     setIsSubmitting(true);
     try {
-      const res = await apiPostComment(articleId, { content: newComment })
-      if (res?.success && res?.data) {
-        const c = res.data
+      const commentData = await apiPostCommentNew(articleId, newComment.trim());
+      
+      if (commentData) {
         const mapped: Comment = {
-          id: c.id,
-          content: c.content,
-          author: { id: c.user.id, name: c.user.firstName || c.user.username, avatar: c.user.imageUrl },
-          createdAt: c.createdAt,
-          likes: c.likes || 0,
+          id: commentData.id,
+          content: commentData.content,
+          author: { 
+            id: commentData.user?.id || 1, 
+            name: commentData.user?.firstName || commentData.user?.username || 'Anonymous', 
+            avatar: commentData.user?.imageUrl 
+          },
+          createdAt: commentData.createdAt,
+          likes: 0,
           isLiked: false,
-        }
-        setComments(prev => [mapped, ...prev])
-        setNewComment('')
+          replies: [],
+        };
+        setComments(prev => [mapped, ...prev]);
+        setNewComment('');
       }
+    } catch (error) {
+      console.error('发表评论失败:', error);
+      // TODO: 显示错误提示
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   };
 
@@ -122,50 +125,75 @@ export function CommentSection({ articleId }: CommentSectionProps) {
 
     setIsSubmitting(true);
     try {
-      const res = await apiPostReply(articleId, parentId, { content: replyContent })
-      if (res?.success && res?.data) {
-        const r = res.data
+      const replyData = await replyToComment(articleId, parentId, replyContent.trim());
+      
+      if (replyData) {
         const mapped: Comment = {
-          id: r.id,
-          content: r.content,
-          author: { id: r.user.id, name: r.user.firstName || r.user.username, avatar: r.user.imageUrl },
-          createdAt: r.createdAt,
-          likes: r.likes || 0,
+          id: replyData.id,
+          content: replyData.content,
+          author: { 
+            id: replyData.user?.id || 1, 
+            name: replyData.user?.firstName || replyData.user?.username || 'Anonymous', 
+            avatar: replyData.user?.imageUrl 
+          },
+          createdAt: replyData.createdAt,
+          likes: 0,
           isLiked: false,
-        }
+        };
+        
+        // 目前简单地将回复添加到父评论的replies中
+        // 如果后端支持层级结构，可以优化这里
         setComments(prev => prev.map(comment => {
           if (comment.id === parentId) {
-            return { ...comment, replies: [...(comment.replies || []), mapped] }
+            return { ...comment, replies: [...(comment.replies || []), mapped] };
           }
-          return comment
-        }))
-        setReplyContent('')
-        setReplyingTo(null)
+          return comment;
+        }));
+        
+        setReplyContent('');
+        setReplyingTo(null);
       }
+    } catch (error) {
+      console.error('回复评论失败:', error);
+      // TODO: 显示错误提示
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   };
 
   // 点赞评论
   const handleLikeComment = async (commentId: number, isReply = false, parentId?: number) => {
-    await apiLikeComment(articleId, commentId)
-    setComments(prev => prev.map(comment => {
-      if (isReply && comment.id === parentId) {
-        return {
-          ...comment,
-          replies: comment.replies?.map(reply => {
-            if (reply.id === commentId) {
-              return { ...reply, isLiked: !reply.isLiked, likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1 }
-            }
-            return reply
-          })
+    try {
+      await apiLikeCommentNew(articleId, commentId);
+      
+      setComments(prev => prev.map(comment => {
+        if (isReply && comment.id === parentId) {
+          return {
+            ...comment,
+            replies: comment.replies?.map(reply => {
+              if (reply.id === commentId) {
+                return { 
+                  ...reply, 
+                  isLiked: !reply.isLiked, 
+                  likes: reply.isLiked ? reply.likes - 1 : reply.likes + 1 
+                };
+              }
+              return reply;
+            })
+          };
+        } else if (comment.id === commentId) {
+          return { 
+            ...comment, 
+            isLiked: !comment.isLiked, 
+            likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1 
+          };
         }
-      } else if (comment.id === commentId) {
-        return { ...comment, isLiked: !comment.isLiked, likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1 }
-      }
-      return comment
-    }))
+        return comment;
+      }));
+    } catch (error) {
+      console.error('点赞评论失败:', error);
+      // TODO: 显示错误提示
+    }
   };
 
   return (

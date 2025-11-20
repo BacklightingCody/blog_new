@@ -41,6 +41,10 @@ export interface ChatSession {
   pinned?: boolean;
   isArchived?: boolean;
   tags?: string[];
+  // 对比模式
+  isModelCompare?: boolean;
+  compareModels?: string[];
+  messagesByModel?: Record<string, ChatMessage[]>;
 }
 
 // ✅ 系统提示词
@@ -71,6 +75,8 @@ export interface SendMessageRequest {
   modelConfig?: ModelConfig;
   systemPrompt?: string;
   placeholders?: PlaceholderItem[]; // ✅ 新增支持占位符参数
+  // 不在会话中追加一条新的用户消息（用于重试：复用原用户消息）
+  suppressUserMessage?: boolean;
 }
 
 // ✅ 占位符结构，用于动态替换内容
@@ -100,11 +106,15 @@ export interface ChatCompletionRequest {
   presence_penalty?: number;
   stream?: boolean;
   top_k?: number;
+  // 额外：占位符（后端可选处理，不直接传第三方厂商）
+  placeholders?: Array<{ id?: string; key: string; value?: string; type?: string; label?: string }>;
+  // 期望的流式格式（默认 sse）
+  streamFormat?: 'sse' | 'json';
 }
 
 // ✅ 默认模型配置
 export const DEFAULT_MODEL_CONFIG: ModelConfig = {
-  model: 'ChatGpt',
+  model: 'gemini-2.0-flash',
   temperature: 0.5,
   topK: 40
 };
@@ -153,7 +163,7 @@ const mockChatSessions: ChatSession[] = [
       createMockMessage('msg_1_1', 'user', '你好！我想了解一下当前人工智能技术的发展趋势。', 120),
       createMockMessage('msg_1_2', 'assistant', '你好！很高兴为你介绍人工智能技术的发展趋势。当前AI领域确实非常活跃...', 118)
     ],
-    systemPrompt: mockSystemPrompts[0].content,
+    systemPrompt: '',
     modelConfig: DEFAULT_MODEL_CONFIG,
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
@@ -166,7 +176,7 @@ const mockChatSessions: ChatSession[] = [
       createMockMessage('msg_2_1', 'user', '我在使用React Hooks时遇到了一个问题，useEffect的依赖数组应该如何正确使用？', 180),
       createMockMessage('msg_2_2', 'assistant', '这是一个很好的问题！useEffect的依赖数组是React Hooks中的关键概念...', 175)
     ],
-    systemPrompt: mockSystemPrompts[1].content,
+    systemPrompt: '',
     modelConfig: DEFAULT_MODEL_CONFIG,
     createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
@@ -191,6 +201,13 @@ interface ChatState {
   // 内部状态
   streamContentRef: string;
   abortController: AbortController | null;
+
+  // 对比模式（全局便捷控制，与会话字段保持同步）
+  isModelCompareEnabled: boolean;
+  compareModels: string[];
+  compareStreaming: boolean;
+  compareStreamContentByModel: Record<string, string>;
+  compareStreamRefByModel: Record<string, string>;
 }
 
 // Chat Store 动作接口
@@ -204,6 +221,17 @@ interface ChatActions {
   updateSessionName: (sessionId: string, name: string) => void;
   toggleSessionPin: (sessionId: string) => void;
   changeSessionType: (sessionId: string, sessionType: 'public' | 'private') => void;
+  // 对比模式控制
+  toggleModelCompare: (enabled: boolean) => void;
+  setCompareModels: (models: string[]) => void;
+  sendMultiModelMessage: (request: SendMessageRequest) => Promise<void>;
+  // 新增：对齐 useChatManager 规范
+  initSessions: (sessions?: ChatSession[]) => void;
+  selectSession: (sessionId: string) => void;
+  loadMoreMessages: (sessionId: string, count?: number) => Promise<{ hasMore: boolean }>;
+  stopStreaming: () => void;
+  setSystemPrompt: (sessionId: string, prompt: string) => void;
+  setModel: (sessionId: string, model: string) => void;
 
   // 消息管理
   sendMessage: (request: SendMessageRequest) => Promise<void>;
@@ -229,7 +257,14 @@ interface ChatActions {
   clearError: () => void;
 
   // 工具方法
-  buildOpenAIMessages: (userContent: string, images?: string[], texts?: string[], historyMessages?: ChatMessage[], systemPrompt?: string) => OpenAIMessage[];
+  buildOpenAIMessages: (
+    userContent: string,
+    images?: string[],
+    texts?: string[],
+    historyMessages?: ChatMessage[],
+    systemPrompt?: string,
+    options?: { appendCurrentUser?: boolean }
+  ) => OpenAIMessage[];
   extractTextFromContent: (content: MessageContent[]) => string;
   classifyError: (error: Error) => { type: 'network' | 'api' | 'unknown'; message: string };
 }
@@ -246,7 +281,8 @@ const extractTextFromContent = (content: MessageContent[]): string => {
 
 // 导入实际的API服务
 import { sendChatRequest } from '@/services/chatApi';
-import { CHAT_CONFIG } from '@/constants/chat';
+import { ChatBackend } from '@/lib/api/chat';
+import { DEFAULT_MODEL, modelSupportsStream, getModelProxyPath } from '@/constants/chat';
 
 // 创建Chat Store
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -254,7 +290,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: mockChatSessions,
   currentSessionId: mockChatSessions[0]?.id || null,
   systemPrompts: mockSystemPrompts,
-  selectedPromptId: mockSystemPrompts[0]?.id || '',
+  selectedPromptId: '',
   modelConfig: DEFAULT_MODEL_CONFIG,
   loading: false,
   streaming: false,
@@ -263,6 +299,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   editingPromptId: null,
   streamContentRef: '',
   abortController: null,
+  isModelCompareEnabled: false,
+  compareModels: [],
+  compareStreaming: false,
+  compareStreamContentByModel: {},
+  compareStreamRefByModel: {},
 
   // 会话管理
   createSession: (name, documentContext, sessionType = 'private') => {
@@ -274,17 +315,37 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       id: sessionId,
       name: name || `对话 ${state.sessions.length + 1}`,
       messages: [],
-      systemPrompt: state.getCurrentPrompt().content,
+      systemPrompt: '',
       modelConfig: state.modelConfig,
       createdAt: timestamp,
       updatedAt: timestamp,
-      sessionType
+      sessionType,
+      isModelCompare: false,
+      compareModels: [],
+      messagesByModel: {}
     };
 
     set((state) => ({
       sessions: [newSession, ...state.sessions],
       currentSessionId: sessionId
     }));
+
+    // 异步持久化到后端（不阻塞UI）
+    (async () => {
+      try {
+        await ChatBackend.createSession({
+          name: newSession.name,
+          systemPrompt: newSession.systemPrompt,
+          modelConfig: { modelName: newSession.modelConfig.model, temperature: newSession.modelConfig.temperature, topK: newSession.modelConfig.topK, maxTokens: newSession.modelConfig.maxTokens, topP: newSession.modelConfig.topP, frequencyPenalty: newSession.modelConfig.frequencyPenalty, presencePenalty: newSession.modelConfig.presencePenalty },
+          sessionType,
+          pinned: newSession.pinned || false,
+          isArchived: newSession.isArchived || false,
+          tags: newSession.tags || [],
+          isModelCompare: newSession.isModelCompare || false,
+          compareModels: newSession.compareModels || []
+        });
+      } catch {}
+    })();
 
     return newSession;
   },
@@ -307,6 +368,24 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
 
   setCurrentSession: (sessionId) => {
+    set((state) => {
+      // 切换会话时自动关闭全局对比开关，使用会话自身的标记
+      const next = state.sessions.find((s) => s.id === sessionId);
+      return {
+        currentSessionId: sessionId,
+        isModelCompareEnabled: !!next?.isModelCompare,
+        compareModels: next?.compareModels || []
+      };
+    });
+  },
+
+  // 新增：初始化与选择别名
+  initSessions: (sessionsArg) => {
+    if (!sessionsArg) return;
+    set({ sessions: sessionsArg, currentSessionId: sessionsArg[0]?.id || null });
+  },
+
+  selectSession: (sessionId) => {
     set({ currentSessionId: sessionId });
   },
 
@@ -345,6 +424,48 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }));
   },
 
+  // 对比模式控制
+  toggleModelCompare: (enabled) => {
+    const stateNow = get();
+    const current = stateNow.getCurrentSession();
+    if (!current) return;
+    set((state) => ({
+      isModelCompareEnabled: enabled,
+      sessions: state.sessions.map((s) =>
+        s.id === current.id ? { ...s, isModelCompare: enabled, updatedAt: new Date().toISOString() } : s
+      )
+    }));
+  },
+
+  setCompareModels: (models) => {
+    const stateNow = get();
+    const current = stateNow.getCurrentSession();
+    if (!current) return;
+    set((state) => ({
+      compareModels: models,
+      sessions: state.sessions.map((s) =>
+        s.id === current.id ? { ...s, compareModels: models, updatedAt: new Date().toISOString() } : s
+      )
+    }));
+  },
+
+  // 新增：分页加载（本地 Mock，返回无更多）
+  loadMoreMessages: async () => {
+    return { hasMore: false };
+  },
+
+  setSystemPrompt: (sessionId, prompt) => {
+    set((state) => ({
+      sessions: state.sessions.map((s) => s.id === sessionId ? { ...s, systemPrompt: prompt, updatedAt: new Date().toISOString() } : s)
+    }));
+  },
+
+  setModel: (sessionId, model) => {
+    set((state) => ({
+      sessions: state.sessions.map((s) => s.id === sessionId ? { ...s, modelConfig: { ...s.modelConfig, model }, updatedAt: new Date().toISOString() } : s)
+    }));
+  },
+
   // 消息管理
   sendMessage: async (request) => {
     const state = get();
@@ -359,46 +480,67 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ abortController, loading: true, error: null, streaming: false, streamContentRef: '' });
 
     try {
-      // 创建用户消息
-      const userMessage: ChatMessage = {
-        id: `msg_${Date.now()}`,
-        role: 'user',
-        content: request.content,
-        timestamp: new Date().toISOString(),
-        status: 'sent',
-        images: request.images,
-        texts: request.texts
-      };
+      // 创建用户消息（当 suppressUserMessage 不为 true 时，才回显到会话）
+      let userMessage: ChatMessage | null = null;
+      if (!request.suppressUserMessage) {
+        userMessage = {
+          id: `msg_${Date.now()}`,
+          role: 'user',
+          content: request.content,
+          timestamp: new Date().toISOString(),
+          status: 'sent',
+          images: request.images,
+          texts: request.texts
+        };
 
-      // 添加用户消息到会话
-      set((state) => ({
-        sessions: state.sessions.map((session) =>
-          session.id === currentSession!.id
-            ? { ...session, messages: [...session.messages, userMessage] }
-            : session
-        )
-      }));
+        set((state) => ({
+          sessions: state.sessions.map((session) =>
+            session.id === currentSession!.id
+              ? { ...session, messages: [...session.messages, userMessage!] }
+              : session
+          )
+        }));
+
+        // 异步保存用户消息
+        (async () => {
+          try { await ChatBackend.addMessage(currentSession!.id, { role: 'user', content: String(userMessage!.content), images: userMessage!.images, texts: userMessage!.texts, rawContent: userMessage!.rawContent }); } catch {}
+        })();
+      }
+
+      // 如果开启了对比模式，转交并发发送
+      if ((currentSession.isModelCompare || state.isModelCompareEnabled) && (currentSession.compareModels?.length || state.compareModels.length)) {
+        await get().sendMultiModelMessage(request);
+        set({ loading: false, streaming: false, streamContent: '', streamContentRef: '' });
+        return;
+      }
 
       // 构建 API 请求
       const systemPrompt = state.getCurrentPrompt();
       const modelConfig = request.modelConfig || state.modelConfig;
 
+      const resolvedModel = modelConfig.model || DEFAULT_MODEL
+      const enableStream = modelSupportsStream(resolvedModel)
       const apiRequest: ChatCompletionRequest = {
-        model: modelConfig.model,
+        model: resolvedModel,
         messages: state.buildOpenAIMessages(
           request.content,
           request.images,
           request.texts,
           currentSession.messages.filter((m) => m.status === 'sent'),
-          systemPrompt.content
+          systemPrompt.content,
+          { appendCurrentUser: !request.suppressUserMessage }
         ),
         temperature: modelConfig.temperature,
         max_tokens: modelConfig.maxTokens,
         top_p: modelConfig.topP,
         frequency_penalty: modelConfig.frequencyPenalty,
         presence_penalty: modelConfig.presencePenalty,
-        stream: true,
-        top_k: modelConfig.topK
+        stream: enableStream,
+        top_k: modelConfig.topK,
+        // 透传占位符（由服务端决定是否与业务数据替换，当前仅占位）
+        placeholders: request.placeholders,
+        // 期望 SSE：true 表示 prefer sse，gemini 将回退为 json
+        streamFormat: 'sse'
       };
 
       // 发送请求
@@ -406,7 +548,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       const response = await sendChatRequest(
         apiRequest,
-        CHAT_CONFIG.API_KEY,
+        '',
         (chunk: string) => {
           set((state) => {
             const newStreamContent = state.streamContentRef + chunk;
@@ -416,7 +558,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             };
           });
         },
-        `${CHAT_CONFIG.BASEURL}${CHAT_CONFIG.PATH}`,
+        // 通过服务端代理，避免浏览器直接带 key
+        getModelProxyPath(resolvedModel),
         abortController.signal
       );
 
@@ -445,6 +588,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         streamContent: '',
         streamContentRef: ''
       }));
+
+      // 异步保存AI消息
+      (async () => { try { await ChatBackend.addMessage(currentSession!.id, { role: 'assistant', content: String(aiMessage.content) }); } catch {} })();
 
     } catch (error) {
       // 处理错误
@@ -516,19 +662,159 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
+  // 多模型并发发送（简化为非流式聚合）
+  sendMultiModelMessage: async (request) => {
+    const state = get();
+    const session = state.getCurrentSession();
+    if (!session) return;
+
+    const models = (session.compareModels && session.compareModels.length > 0) ? session.compareModels : state.compareModels;
+    if (!models || models.length === 0) return;
+
+    // 记录用户消息（共用一条）
+    const userMsg: ChatMessage = {
+      id: `msg_${Date.now()}`,
+      role: 'user',
+      content: request.content,
+      timestamp: new Date().toISOString(),
+      status: 'sent',
+      images: request.images,
+      texts: request.texts
+    };
+    set((st) => ({
+      sessions: st.sessions.map((s) => {
+        if (s.id !== session.id) return s;
+        const map = { ...(s.messagesByModel || {}) };
+        // 在每个模型专属列表里也记录用户消息（仅一次），便于列内上下文连续
+        for (const model of models) {
+          const arr = map[model] || [];
+          if (!arr.some((m) => m.id === userMsg.id)) {
+            map[model] = [...arr, userMsg];
+          }
+        }
+        return {
+          ...s,
+          messages: [...s.messages, userMsg],
+          messagesByModel: map,
+          updatedAt: new Date().toISOString(),
+        };
+      })
+    }));
+
+    // 使用会话上下文构建 messages
+    const historyMessages = session.messages.filter((m) => m.status === 'sent');
+    const sysPrompt = state.getCurrentPrompt();
+
+    // 并发请求各模型（按模型能力决定是否使用 SSE）
+    set({ compareStreaming: true, compareStreamContentByModel: {}, compareStreamRefByModel: {} });
+    const tasks = models.map(async (modelValue) => {
+      const enableStream = modelSupportsStream(modelValue);
+      const apiRequest: ChatCompletionRequest = {
+        model: modelValue,
+        messages: state.buildOpenAIMessages(
+          request.content,
+          request.images,
+          request.texts,
+          historyMessages,
+          sysPrompt.content,
+          { appendCurrentUser: false }
+        ),
+        temperature: state.modelConfig.temperature,
+        max_tokens: state.modelConfig.maxTokens,
+        top_p: state.modelConfig.topP,
+        frequency_penalty: state.modelConfig.frequencyPenalty,
+        presence_penalty: state.modelConfig.presencePenalty,
+        stream: enableStream,
+        top_k: state.modelConfig.topK,
+        streamFormat: enableStream ? 'sse' : 'json'
+      };
+
+      try {
+        const res = await sendChatRequest(
+          apiRequest,
+          '',
+          enableStream
+            ? (delta: string) => {
+              set((st) => {
+                const ref = { ...(st.compareStreamRefByModel || {}) };
+                ref[modelValue] = (ref[modelValue] || '') + delta;
+                return {
+                  compareStreamRefByModel: ref,
+                  compareStreamContentByModel: { ...st.compareStreamContentByModel, [modelValue]: ref[modelValue] }
+                };
+              });
+            }
+            : undefined,
+          getModelProxyPath(modelValue)
+        );
+        const aiMsg: ChatMessage = {
+          id: `msg_${Date.now()}_${modelValue}`,
+          role: 'assistant',
+          content: res,
+          timestamp: new Date().toISOString(),
+          status: 'sent',
+          metadata: { model: modelValue }
+        };
+        set((st) => ({
+          sessions: st.sessions.map((s) => {
+            if (s.id !== session.id) return s;
+            const map = { ...(s.messagesByModel || {}) };
+            map[modelValue] = [...(map[modelValue] || []), aiMsg];
+            return { ...s, messagesByModel: map, updatedAt: new Date().toISOString() };
+          })
+        }));
+      } catch (e) {
+        const err = e as Error;
+        const aiErr: ChatMessage = {
+          id: `msg_${Date.now()}_${modelValue}_err`,
+          role: 'assistant',
+          content: state.classifyError(err).message,
+          timestamp: new Date().toISOString(),
+          status: 'error',
+          metadata: { model: modelValue }
+        } as any;
+        set((st) => ({
+          sessions: st.sessions.map((s) => {
+            if (s.id !== session.id) return s;
+            const map = { ...(s.messagesByModel || {}) };
+            map[modelValue] = [...(map[modelValue] || []), aiErr];
+            return { ...s, messagesByModel: map, updatedAt: new Date().toISOString() };
+          })
+        }));
+      }
+    });
+
+    await Promise.allSettled(tasks);
+    set({ compareStreaming: false, compareStreamContentByModel: {}, compareStreamRefByModel: {} });
+  },
+
   retryMessage: async (messageId) => {
     const state = get();
     const currentSession = state.getCurrentSession();
     if (!currentSession) return;
 
-    const messageIndex = currentSession.messages.findIndex((m) => m.id === messageId);
-    if (messageIndex === -1) return;
+    const targetIndex = currentSession.messages.findIndex((m) => m.id === messageId);
+    if (targetIndex === -1) return;
 
-    const message = currentSession.messages[messageIndex];
-    if (message.role !== 'user') return;
+    let userIndex = targetIndex;
+    let baseUserMessage = currentSession.messages[targetIndex];
 
-    // 删除该用户消息之后的所有消息
-    const messagesToKeep = currentSession.messages.slice(0, messageIndex + 1);
+    // 如果点击的是 AI 消息，则回溯到最近的上一条用户消息
+    if (baseUserMessage.role !== 'user') {
+      for (let i = targetIndex - 1; i >= 0; i -= 1) {
+        if (currentSession.messages[i].role === 'user') {
+          userIndex = i;
+          baseUserMessage = currentSession.messages[i];
+          break;
+        }
+      }
+    }
+
+    // 如果仍未找到用户消息，则不处理
+    if (!baseUserMessage || baseUserMessage.role !== 'user') return;
+
+    // 删除该用户消息之后的所有消息（保证对话一致性）
+    const messagesToKeep = currentSession.messages.slice(0, userIndex + 1);
 
     set((state) => ({
       sessions: state.sessions.map((session) =>
@@ -543,10 +829,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }));
 
     // 重新发送消息
-    const retryRequest: SendMessageRequest = {
-      content: typeof message.content === 'string' ? message.content : extractTextFromContent(message.content as MessageContent[]),
-      images: message.images || [],
-      texts: message.texts || []
+      const retryRequest: SendMessageRequest = {
+      content: typeof baseUserMessage.content === 'string' ? baseUserMessage.content : extractTextFromContent(baseUserMessage.content as MessageContent[]),
+      images: baseUserMessage.images || [],
+        texts: baseUserMessage.texts || [],
+        suppressUserMessage: true
     };
 
     await state.sendMessage(retryRequest);
@@ -585,7 +872,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   // 系统提示词管理
   getCurrentPrompt: () => {
     const state = get();
-    return state.systemPrompts.find((p) => p.id === state.selectedPromptId) || state.systemPrompts[0];
+    return state.systemPrompts.find((p) => p.id === state.selectedPromptId) || { id: 'empty', name: '未使用系统提示词', content: '' };
   },
 
   selectPrompt: (promptId) => {
@@ -681,12 +968,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     });
   },
 
+  // 新增：停止流式别名
+  stopStreaming: () => {
+    const state = get();
+    state.cancelRequest();
+  },
+
   clearError: () => {
     set({ error: null });
   },
 
   // 工具方法
-  buildOpenAIMessages: (userContent, images = [], texts = [], historyMessages = [], systemPrompt) => {
+  buildOpenAIMessages: (userContent, images = [], texts = [], historyMessages = [], systemPrompt, options = { appendCurrentUser: true }) => {
     const messages: OpenAIMessage[] = [];
 
     // 添加系统提示词
@@ -734,44 +1027,46 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
     });
 
-    // 构建当前用户消息
-    let currentContent: string | MessageContent[];
+    // 构建当前用户消息（可选）
+    if (options.appendCurrentUser) {
+      let currentContent: string | MessageContent[];
 
-    if (images.length > 0 || texts.length > 0) {
-      const contentArray: MessageContent[] = [];
+      if (images.length > 0 || texts.length > 0) {
+        const contentArray: MessageContent[] = [];
 
-      if (texts.length > 0) {
-        const contextText = texts.join('\n');
-        contentArray.push({
-          type: 'text',
-          text: `上下文信息：\n${contextText}\n\n用户问题：${userContent}`
+        if (texts.length > 0) {
+          const contextText = texts.join('\n');
+          contentArray.push({
+            type: 'text',
+            text: `上下文信息：\n${contextText}\n\n用户问题：${userContent}`
+          });
+        } else {
+          contentArray.push({
+            type: 'text',
+            text: userContent
+          });
+        }
+
+        images.forEach((imageUrl) => {
+          contentArray.push({
+            type: 'image_url',
+            image_url: {
+              url: imageUrl,
+              detail: 'auto'
+            }
+          });
         });
+
+        currentContent = contentArray;
       } else {
-        contentArray.push({
-          type: 'text',
-          text: userContent
-        });
+        currentContent = userContent;
       }
 
-      images.forEach((imageUrl) => {
-        contentArray.push({
-          type: 'image_url',
-          image_url: {
-            url: imageUrl,
-            detail: 'auto'
-          }
-        });
+      messages.push({
+        role: 'user',
+        content: currentContent
       });
-
-      currentContent = contentArray;
-    } else {
-      currentContent = userContent;
     }
-
-    messages.push({
-      role: 'user',
-      content: currentContent
-    });
 
     return messages;
   },
@@ -801,3 +1096,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     return { type: 'unknown', message: `❓ ${error.message}` };
   }
 }));
+
+// 额外导出别名 Hook 期望的方法签名（保持向后兼容）
+export type ChatManagerMethods = Pick<ChatActions,
+  'initSessions' | 'createSession' | 'selectSession' | 'deleteSession' | 'sendMessage' |
+  'retryMessage' | 'editMessage' | 'deleteMessage' | 'loadMoreMessages' | 'stopStreaming' |
+  'setSystemPrompt' | 'setModel'
+>;

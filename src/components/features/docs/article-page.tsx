@@ -20,15 +20,16 @@ import { formatDistanceToNow } from 'date-fns';
 import { zhCN } from 'date-fns/locale';
 import MarkdownRender from './markdown-render';
 import { CommentSection } from '../docs/comment-section';
-import { RelatedArticles } from './related-articles';
+import { RelatedArticlesServer } from './related-articles-server';
 import { ShareDialog } from './share-dialog';
 import { ArticleActions } from './article-actions';
 
 interface ArticlePageProps {
   article: Article;
+  relatedArticles?: Article[];
 }
 
-export function ArticlePage({ article }: ArticlePageProps) {
+export function ArticlePage({ article, relatedArticles }: ArticlePageProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showShareDialog, setShowShareDialog] = useState(false);
@@ -112,14 +113,19 @@ export function ArticlePage({ article }: ArticlePageProps) {
           {/* 互动按钮 */}
           <div className="mb-8">
             <ArticleActions
+              articleId={article.id}
               likes={article.likes}
               bookmarks={article.bookmarks}
               comments={article.comments}
-              onLike={handleLike}
-              onBookmark={handleBookmark}
+              onLike={(newLikes) => {
+                // TODO: 更新文章状态
+                console.log('文章点赞更新:', newLikes);
+              }}
+              onBookmark={(newBookmarks) => {
+                // TODO: 更新文章状态
+                console.log('文章收藏更新:', newBookmarks);
+              }}
               onShare={handleShare}
-              isLiking={false}
-              isBookmarking={false}
             />
           </div>
 
@@ -161,9 +167,11 @@ export function ArticlePage({ article }: ArticlePageProps) {
       </article>
 
       {/* 相关文章推荐 */}
-      <div className="mt-8">
-        <RelatedArticles currentArticle={article} />
-      </div>
+      {relatedArticles && relatedArticles.length > 0 && (
+        <div className="mt-8">
+          <RelatedArticlesServer articles={relatedArticles} currentArticle={article} />
+        </div>
+      )}
 
       {/* 评论区域 - 暂时注释掉 */}
       <CommentSection articleId={article.id} />

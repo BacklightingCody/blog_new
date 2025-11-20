@@ -4,8 +4,10 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { useClientSide } from "@/hooks/useClientSide"
 
 export default function TimeStats() {
+  const isClient = useClientSide();
   const [stats, setStats] = useState({
     dayOfYear: 0,
     yearPercentage: 0,
@@ -16,6 +18,8 @@ export default function TimeStats() {
   const articleCount = 10
 
   useEffect(() => {
+    if (!isClient) return;
+
     const calculateStats = () => {
       const now = new Date()
       const startOfYear = new Date(now.getFullYear(), 0, 0)
@@ -44,7 +48,7 @@ export default function TimeStats() {
     calculateStats()
     const interval = setInterval(calculateStats, 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [isClient])
 
   return (
     <Card className='bg-theme-secondery/10 border-0'>

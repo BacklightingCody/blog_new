@@ -1,172 +1,47 @@
-import { apiGet, apiPost, apiPatch, apiDelete, buildQueryParams, ApiResponse, PaginationResult } from '../api';
+import { api, ApiResponse } from './client';
+import { Article, PaginatedArticles } from '@/types/article';
 
-// 文章数据类型（基于后端 Prisma 模型）
-export interface User {
-  id: number;
-  username: string;
-  firstName: string | null;
-  lastName: string | null;
-  imageUrl: string | null;
-}
+const DEFAULT_HEADERS = {
+    'Content-Type': 'application/json',
+};
 
-export interface Tag {
-  id: number;
-  name: string;
-  slug: string;
-  color: string | null;
-  description: string | null;
-}
+export const articlesApi = {
+    list: (params: Record<string, any> = {}) =>
+        api.get<PaginatedArticles>('/articles', params),
 
-export interface ArticleTag {
-  tag: Tag;
-  createdAt: string;
-}
+    getById: (id: string | number) =>
+        api.get<Article>(`/articles/${id}`),
 
-export interface Article {
-  id: number;
-  slug: string;
-  title: string;
-  summary: string | null;
-  content: string;
-  html: string | null;
-  coverImage: string | null;
-  readTime: number | null;
-  category: string;
-  isPublished: boolean;
-  isDraft: boolean;
-  viewCount: number;
-  likes: number;
-  bookmarks: number;
-  comments: number;
-  userId: number;
-  user: User;
-  articleTags: ArticleTag[];
-  createdAt: string;
-  updatedAt: string;
-  _count?: {
-    messages: number;
-  };
-}
+    getBySlug: (slug: string) =>
+        api.get<Article>(`/articles/slug/${slug}`),
 
-// 文章查询参数
-export interface ArticleQueryParams {
-  page?: number;
-  limit?: number;
-  search?: string;
-  category?: string;
-  tags?: string;
-  userId?: number;
-  isPublished?: boolean;
-  isDraft?: boolean;
-  author?: string;
-  tag?: string;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
+    getRecent: (limit = 10) =>
+        api.get<Article[]>('/articles/recent', { limit }),
 
-// 创建文章 DTO
-export interface CreateArticleDto {
-  slug: string;
-  title: string;
-  summary?: string;
-  content: string;
-  html?: string;
-  coverImage?: string;
-  readTime?: number;
-  category: string;
-  isPublished?: boolean;
-  isDraft?: boolean;
-  tags?: string[];
-  userId: number;
-}
+    getPopular: (limit = 10) =>
+        api.get<Article[]>('/articles/popular', { limit }),
 
-// 更新文章 DTO
-export interface UpdateArticleDto extends Partial<CreateArticleDto> {}
+    getCategories: () =>
+        api.get<any[]>('/articles/categories'),
 
-// 文章 API 服务
-export class ArticlesApi {
-  // 获取文章列表
-  static async getArticles(params: ArticleQueryParams = {}): Promise<ApiResponse<PaginationResult<Article>>> {
-    const queryString = buildQueryParams(params);
-    return apiGet<PaginationResult<Article>>(`/articles${queryString}`);
-  }
+    like: (id: number) =>
+        api.post<Article>(`/articles/${id}/like`),
 
-  // 获取文章详情（通过 ID）
-  static async getArticleById(id: number): Promise<ApiResponse<Article>> {
-    return apiGet<Article>(`/articles/${id}`);
-  }
+    bookmark: (id: number) =>
+        api.post<Article>(`/articles/${id}/bookmark`),
 
-  // 获取文章详情（通过 slug）
-  static async getArticleBySlug(slug: string): Promise<ApiResponse<Article>> {
-    return apiGet<Article>(`/articles/slug/${slug}`);
-  }
+    // Comments
+    comments: {
+        list: (articleId: number) =>
+            api.get<any[]>(`/articles/${articleId}/comments`),
 
-  // 获取文章分类列表
-  static async getCategories(): Promise<ApiResponse<string[]>> {
-    return apiGet<string[]>('/articles/categories');
-  }
+        create: (articleId: number, content: string) =>
+            api.post<any>(`/articles/${articleId}/comments`, { content }),
 
-  // 获取热门文章
-  static async getPopularArticles(limit?: number): Promise<ApiResponse<Article[]>> {
-    const queryString = limit ? buildQueryParams({ limit }) : '';
-    return apiGet<Article[]>(`/articles/popular${queryString}`);
-  }
+        reply: (articleId: number, commentId: number, content: string) =>
+            api.post<any>(`/articles/${articleId}/comments/${commentId}/reply`, { content }),
 
-  // 获取最新文章
-  static async getRecentArticles(limit?: number): Promise<ApiResponse<Article[]>> {
-    const queryString = limit ? buildQueryParams({ limit }) : '';
-    return apiGet<Article[]>(`/articles/recent${queryString}`);
-  }
-
-  // 创建文章
-  static async createArticle(data: CreateArticleDto): Promise<ApiResponse<Article>> {
-    return apiPost<Article>('/articles', data);
-  }
-
-  // 更新文章
-  static async updateArticle(id: number, data: UpdateArticleDto): Promise<ApiResponse<Article>> {
-    return apiPatch<Article>(`/articles/${id}`, data);
-  }
-
-  // 发布文章
-  static async publishArticle(id: number): Promise<ApiResponse<Article>> {
-    return apiPatch<Article>(`/articles/${id}/publish`, {});
-  }
-
-  // 取消发布文章
-  static async unpublishArticle(id: number): Promise<ApiResponse<Article>> {
-    return apiPatch<Article>(`/articles/${id}/unpublish`, {});
-  }
-
-  // 点赞文章
-  static async likeArticle(id: number): Promise<ApiResponse<Article>> {
-    return apiPatch<Article>(`/articles/${id}/like`, {});
-  }
-
-  // 收藏文章
-  static async bookmarkArticle(id: number): Promise<ApiResponse<Article>> {
-    return apiPatch<Article>(`/articles/${id}/bookmark`, {});
-  }
-
-  // 删除文章
-  static async deleteArticle(id: number): Promise<ApiResponse<Article>> {
-    return apiDelete<Article>(`/articles/${id}`);
-  }
-}
-
-// 导出便捷方法
-export const {
-  getArticles,
-  getArticleById,
-  getArticleBySlug,
-  getCategories,
-  getPopularArticles,
-  getRecentArticles,
-  createArticle,
-  updateArticle,
-  publishArticle,
-  unpublishArticle,
-  likeArticle,
-  bookmarkArticle,
-  deleteArticle,
-} = ArticlesApi;
+        like: (articleId: number, commentId: number) =>
+            api.post<any>(`/articles/${articleId}/comments/${commentId}/like`),
+    }
+};

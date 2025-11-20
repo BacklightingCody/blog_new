@@ -295,7 +295,7 @@ export function MessageBubble({
                 )}
               </div>
               
-              <div className="flex items-center gap-1">
+               <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -312,6 +312,17 @@ export function MessageBubble({
                 >
                   <span className="text-sm">😞</span>
                 </Button>
+                 {onRetry && (
+                   <Button
+                     variant="ghost"
+                     size="sm"
+                     onClick={() => onRetry(message.id)}
+                     className="h-8 px-3 text-xs hover:bg-muted/80 transition-colors duration-200"
+                     title="重试生成"
+                   >
+                     重试
+                   </Button>
+                 )}
               </div>
             </div>
           )}

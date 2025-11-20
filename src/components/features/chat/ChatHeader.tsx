@@ -21,6 +21,7 @@ interface ChatHeaderProps {
   onShowSettings: () => void;
   onShareSession?: () => void;
   onExportSession?: () => void;
+  onToggleSidebar?: () => void;
 }
 
 export function ChatHeader({
@@ -28,47 +29,18 @@ export function ChatHeader({
   onClearMessages,
   onShowSettings,
   onShareSession,
-  onExportSession
+  onExportSession,
+  onToggleSidebar
 }: ChatHeaderProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   // 获取模型显示信息
   const getModelInfo = (modelName: string) => {
     const modelMap: Record<string, { name: string; icon: React.ReactNode; color: string }> = {
-      'hunyuan-t1-latest': { 
-        name: '腾讯混元', 
-        icon: <Brain className="w-3 h-3" />, 
-        color: 'bg-blue-100 text-blue-700 border-blue-200' 
-      },
-      'DeepSeek-R1-Online-64K': { 
-        name: 'DeepSeek R1', 
-        icon: <Zap className="w-3 h-3" />, 
-        color: 'bg-purple-100 text-purple-700 border-purple-200' 
-      },
-      'gpt-4o': { 
-        name: 'GPT-4o', 
-        icon: <Sparkles className="w-3 h-3" />, 
-        color: 'bg-green-100 text-green-700 border-green-200' 
-      },
-      'gpt-4o-mini': { 
-        name: 'GPT-4o Mini', 
-        icon: <Sparkles className="w-3 h-3" />, 
-        color: 'bg-emerald-100 text-emerald-700 border-emerald-200' 
-      },
-      'claude-3-5-sonnet-20241022': { 
-        name: 'Claude 3.5', 
-        icon: <Brain className="w-3 h-3" />, 
-        color: 'bg-orange-100 text-orange-700 border-orange-200' 
-      },
-      'gemini-1.5-pro-latest': { 
-        name: 'Gemini Pro', 
+      'gemini-2.0-flash': { 
+        name: 'Gemini 2.0 Flash', 
         icon: <Sparkles className="w-3 h-3" />, 
         color: 'bg-indigo-100 text-indigo-700 border-indigo-200' 
-      },
-      'ChatGpt': { 
-        name: 'ChatGPT', 
-        icon: <MessageCircle className="w-3 h-3" />, 
-        color: 'bg-gray-100 text-gray-700 border-gray-200' 
       }
     };
     return modelMap[modelName] || { 
@@ -95,6 +67,13 @@ export function ChatHeader({
       };
     }
     
+    if (currentSession.isModelCompare) {
+      return {
+        text: '对比模式',
+        color: 'bg-purple-50 text-purple-700 border-purple-200',
+        pulse: true,
+      };
+    }
     if (diffInMinutes < 5) {
       return { 
         text: '活跃中', 
@@ -155,8 +134,13 @@ export function ChatHeader({
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="h-full px-6 flex items-center justify-between">
-        {/* 左侧：会话信息 */}
+        {/* 左侧：折叠按钮 + 会话信息 */}
         <div className="flex items-center gap-4 flex-1 min-w-0">
+          {/* {onToggleSidebar && (
+            <Button variant="ghost" size="sm" className="h-9 px-3 rounded-lg cursor-pointer" onClick={onToggleSidebar}>
+              <span className="text-sm">侧边栏</span>
+            </Button>
+          )} */}
           {/* 会话头像 */}
           <div className="relative">
             <Avatar className="w-10 h-10 border-2 border-background shadow-lg">

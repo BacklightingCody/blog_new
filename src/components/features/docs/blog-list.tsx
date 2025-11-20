@@ -27,14 +27,12 @@ export default function BlogList({ category, limit, showPagination = true }: Blo
   const [hasMore, setHasMore] = useState(true)
   const [total, setTotal] = useState(0)
   const observerRef = useRef<HTMLDivElement>(null)
-  const [isMainDocs, setIsMainDocs] = useState(window.location.pathname === '/docs');
+  const [isMainDocs, setIsMainDocs] = useState(false);
 
   useEffect(() => {
-    let url = false
-    if (window.location.pathname === '/docs') {
-      url = true;
-    }
-    setIsMainDocs(url);
+    // 使用 useEffect 确保在客户端执行
+    const isMainDocsPage = window.location.pathname === '/docs';
+    setIsMainDocs(isMainDocsPage);
   }, [])
   // 加载文章
   const loadArticles = async (pageNum: number = 1, append: boolean = false) => {

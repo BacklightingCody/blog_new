@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useChatStore } from '@/zustand/stores/chatStore';
-import { ChatSidebar, ChatHeader, ChatBody, ChatInput, ChatSettings } from '@/components/features/chat';
+import { ChatSidebar, ChatHeader, ChatBody, ChatInput, ChatSettings, ModelCompareSwitch } from '@/components/features/chat';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { AVAILABLE_MODELS } from '@/constants/chat';
 
 export default function ChatLayout({
   children,
@@ -10,6 +12,8 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   const [showSettings, setShowSettings] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // 对比开关联动侧边栏（基于全局开关）将在获取 store 后设置
   
   const {
     sessions,
@@ -37,71 +41,21 @@ export default function ChatLayout({
     selectPrompt,
     addSystemPrompt,
     updateSystemPrompt,
-    deleteSystemPrompt
+    deleteSystemPrompt,
+    isModelCompareEnabled,
+    compareModels,
+    toggleModelCompare,
+    setCompareModels,
+    compareStreaming,
+    compareStreamContentByModel
   } = useChatStore();
 
   const currentSession = getCurrentSession();
 
-  // 处理创建新会话
-  const handleCreateSession = () => {
-    createSession();
-  };
-
-  // 处理选择会话
-  const handleSelectSession = (sessionId: string) => {
-    setCurrentSession(sessionId);
-  };
-
-  // 处理删除会话
-  const handleDeleteSession = (sessionId: string) => {
-    deleteSession(sessionId);
-  };
-
-  // 处理重命名会话
-  const handleRenameSession = (sessionId: string, newName: string) => {
-    updateSessionName(sessionId, newName);
-  };
-
-  // 处理置顶会话
-  const handleTogglePin = (sessionId: string) => {
-    toggleSessionPin(sessionId);
-  };
-
-  // 处理会话类型切换
-  const handleChangeSessionType = (sessionId: string, sessionType: 'public' | 'private') => {
-    changeSessionType(sessionId, sessionType);
-  };
-
-  // 处理清空消息
-  const handleClearMessages = () => {
-    if (currentSession) {
-      clearSessionMessages(currentSession.id);
-    }
-  };
-
-  // 处理发送消息
-  const handleSendMessage = async (request: any) => {
-    await sendMessage(request);
-  };
-
-  // 处理重试消息
-  const handleRetryMessage = async (messageId: string) => {
-    await retryMessage(messageId);
-  };
-
-  // 处理编辑消息
-  const handleEditMessage = (messageId: string, newContent: string) => {
-    if (currentSession) {
-      editMessage(currentSession.id, messageId, newContent);
-    }
-  };
-
-  // 处理删除消息
-  const handleDeleteMessage = (messageId: string) => {
-    if (currentSession) {
-      deleteMessage(currentSession.id, messageId);
-    }
-  };
+  // 对比开关联动侧边栏（基于全局开关）
+  useEffect(() => {
+    if (isModelCompareEnabled) setSidebarCollapsed(true);
+  }, [isModelCompareEnabled]);
 
   // 处理显示设置
   const handleShowSettings = () => {
@@ -113,30 +67,7 @@ export default function ChatLayout({
     setShowSettings(false);
   };
 
-  // 处理模型配置更新
-  const handleModelConfigChange = (config: Partial<typeof modelConfig>) => {
-    updateModelConfig(config);
-  };
-
-  // 处理提示词选择
-  const handlePromptSelect = (promptId: string) => {
-    selectPrompt(promptId);
-  };
-
-  // 处理保存新提示词
-  const handlePromptSave = (prompt: Omit<any, 'id'>) => {
-    addSystemPrompt(prompt);
-  };
-
-  // 处理更新提示词
-  const handlePromptUpdate = (promptId: string, updates: Partial<any>) => {
-    updateSystemPrompt(promptId, updates);
-  };
-
-  // 处理删除提示词
-  const handlePromptDelete = (promptId: string) => {
-    deleteSystemPrompt(promptId);
-  };
+  // 提示词与模型设置直接下发 store 方法，避免中间包装
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -144,12 +75,14 @@ export default function ChatLayout({
       <ChatSidebar
         sessions={sessions}
         currentSessionId={currentSessionId}
-        onCreateSession={handleCreateSession}
-        onSelectSession={handleSelectSession}
-        onDeleteSession={handleDeleteSession}
-        onRenameSession={handleRenameSession}
-        onTogglePin={handleTogglePin}
-        onChangeSessionType={handleChangeSessionType}
+        onCreateSession={() => createSession()}
+        onSelectSession={(id) => setCurrentSession(id)}
+        onDeleteSession={(id) => deleteSession(id)}
+        onRenameSession={(id, name) => updateSessionName(id, name)}
+        onTogglePin={(id) => toggleSessionPin(id)}
+        onChangeSessionType={(id, type) => changeSessionType(id, type)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
       />
 
       {/* 主要内容区域 */}
@@ -157,29 +90,78 @@ export default function ChatLayout({
         {/* 头部 */}
         <ChatHeader
           currentSession={currentSession}
-          onClearMessages={handleClearMessages}
+          onClearMessages={() => currentSession && clearSessionMessages(currentSession.id)}
           onShowSettings={handleShowSettings}
           onShareSession={() => console.log('分享会话')}
           onExportSession={() => console.log('导出会话')}
+          onToggleSidebar={() => setSidebarCollapsed((v) => !v)}
         />
 
-        {/* 消息区域 */}
-        <div className="flex-1 overflow-y-auto">
-          <ChatBody
-            messages={currentSession?.messages || []}
-            isLoading={loading}
-            isStreaming={streaming}
-            streamContent={streamContent}
-            onRetryMessage={handleRetryMessage}
-            onEditMessage={handleEditMessage}
-            onDeleteMessage={handleDeleteMessage}
+        {/* 顶部工具栏：对比模式开关（仅控制模式与模型选择） */}
+        <div className="px-4 py-2 border-b flex items-center gap-3">
+          <ModelCompareSwitch
+            enabled={isModelCompareEnabled}
+            selectedModels={compareModels}
+            onToggle={(enabled) => {
+              toggleModelCompare(enabled);
+            }}
+            onSelectModels={(models) => setCompareModels(models)}
           />
         </div>
 
-        {/* 输入区域 - 固定在底部 */}
+        {/* 主区域：对比模式 -> 渲染 X 个 ChatBody 列；普通模式 -> 单列 */}
+        <div className="flex-1 overflow-y-auto p-4">
+          {isModelCompareEnabled && compareModels.length > 0 ? (
+            <div
+              className="grid gap-4"
+              style={{
+                gridTemplateColumns: `repeat(${Math.max(compareModels.length, 1)}, minmax(0, 1fr))`,
+              }}
+            >
+              {compareModels.map((model) => {
+                const friendly = AVAILABLE_MODELS.find((m) => m.value === model)?.name || model;
+                const columnMessages = currentSession?.messagesByModel?.[model] || [];
+                const streamCol = compareStreamContentByModel?.[model] || '';
+                return (
+                  <div key={model} className="rounded-xl border bg-background overflow-hidden">
+                    <div className="px-4 py-2 border-b text-sm font-medium flex items-center justify-between">
+                      <span>{friendly}</span>
+                      <span className="text-xs text-muted-foreground">{model}</span>
+                    </div>
+                    <ScrollArea className="max-h-[70vh]">
+                      <div className="p-3">
+                        <ChatBody
+                          messages={columnMessages}
+                          isLoading={loading}
+                          isStreaming={compareStreaming}
+                          streamContent={streamCol}
+                          onRetryMessage={(messageId) => retryMessage(messageId)}
+                          onEditMessage={(messageId, content) => currentSession && editMessage(currentSession.id, messageId, content)}
+                          onDeleteMessage={(messageId) => currentSession && deleteMessage(currentSession.id, messageId)}
+                        />
+                      </div>
+                    </ScrollArea>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <ChatBody
+              messages={currentSession?.messages || []}
+              isLoading={loading}
+              isStreaming={streaming}
+              streamContent={streamContent}
+              onRetryMessage={(messageId) => retryMessage(messageId)}
+              onEditMessage={(messageId, content) => currentSession && editMessage(currentSession.id, messageId, content)}
+              onDeleteMessage={(messageId) => currentSession && deleteMessage(currentSession.id, messageId)}
+            />
+          )}
+        </div>
+
+        {/* 输入区域 - 复用同一输入框（对比逻辑在 store 内部处理） */}
         <div className="flex-shrink-0 border-t bg-background">
           <ChatInput
-            onSendMessage={handleSendMessage}
+            onSendMessage={(req) => sendMessage(req)}
             isLoading={loading}
             onCancelRequest={cancelRequest}
             disabled={!currentSession}
@@ -192,13 +174,13 @@ export default function ChatLayout({
         isOpen={showSettings}
         onClose={handleCloseSettings}
         modelConfig={modelConfig}
-        onModelConfigChange={handleModelConfigChange}
+        onModelConfigChange={updateModelConfig}
         systemPrompts={systemPrompts}
         selectedPromptId={selectedPromptId}
-        onPromptSelect={handlePromptSelect}
-        onPromptSave={handlePromptSave}
-        onPromptUpdate={handlePromptUpdate}
-        onPromptDelete={handlePromptDelete}
+        onPromptSelect={selectPrompt}
+        onPromptSave={addSystemPrompt}
+        onPromptUpdate={updateSystemPrompt}
+        onPromptDelete={deleteSystemPrompt}
       />
     </div>
   );

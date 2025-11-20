@@ -5,6 +5,8 @@ import Layout from '@/components/layout/Layout'
 import { Providers } from "./providers";
 import ClientClerkProvider from '@/components/theme/ClientClerkProvider';
 import UserSync from "@/components/user/UserSync";
+import { Background } from "@/components/layout/background";
+import { PageTransition } from "@/components/layout/transition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,7 +43,12 @@ export default function RootLayout({
         <ClientClerkProvider>
           <UserSync />
           <Providers>
-            <Layout>{children}</Layout>
+            <Background />
+            <Layout>
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </Layout>
           </Providers>
         </ClientClerkProvider>
       </body>
